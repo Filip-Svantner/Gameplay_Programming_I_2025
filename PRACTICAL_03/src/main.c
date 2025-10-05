@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <iostream>
 
 int choice;
 
@@ -79,12 +80,12 @@ void printCoordinates(Coordinates c)
 }
 
 //Select war head
-Screens selectWarHead(Missile t_missile)
+Screens selectWarHead(Missile *t_missile)
 {
-  std::cout << "Select missile: " << "\n";
-  std::cout << "1 - Explosive " << "\n";
-  std::cout << "2 - Nuclear " << "\n";
-  std::cin >> choice << "\n";
+  printf("Select missile: \n");
+  printf("1 - Explosive \n");
+  printf("2 - Nuclear \n");
+  std::cin >> choice;
   if (choice == 1){
     t_missile->payload = EXPLOSIVE;
     return COORDINATES;
@@ -94,34 +95,35 @@ Screens selectWarHead(Missile t_missile)
     return COORDINATES;
   }
   else{
-    std::cout << "Invalid choice." << "\n";
+    printf("Invalid choice.\n");
     return WAR_HEADS;
   }
 
 }
 
-Screens selectCoordinates(Missile t_missile)
+Screens selectCoordinates(Missile *t_missile) //used to select coordinates
 {
-  std::cout << "Choose x coordinate: ";
-  std::cin >> choice << "\n";
-  t_missile->Coordinates.x = choice;
-  std::cout << "Choose y coordinate: ";
-  std::cin >> choice << "\n";
-  t_missile->Coordinates.y = choice;
+  std::cout << "Choose x coordinate: " ;
+  std::cin >> choice; //input of x coordinate
+  t_missile->coordinates.x = choice;
+  printf("Choose y coordinate: ");
+  std::cin >> choice; //input of y coordinate
+  t_missile->coordinates.y = choice;
   return CODE;
 }
 
-Screens enterCode(Missile t_missile)
+Screens enterCode(Missile *t_missile) // code check
 {
-  int code = 1234;
-  int codeCounter = 0;
+  int code = 1234; //code number
+  int t_choice;
+  int codeCounter = 0; //how many times was code inserted
 
   while (codeCounter < 4){
-  	std::cout << "Enter arming code: ";
- 	std::cin >> choice;
-  		if(choice == 1234){
+  	printf("Enter arming code: ");
+ 	std::cin >> t_choice;
+  		if(t_choice == 1234){
    	// Set Missile Armed Status
- 			t_missile->arm(missile);
+ 			t_missile->arm(t_missile);
 			codeCounter = 0;
   		}
  		 else{
@@ -132,28 +134,33 @@ Screens enterCode(Missile t_missile)
   {
     return COLLISION;
   }
-  else
+  else 
   {
-    std::cout << "You failed to launch. " << "\n";
+    printf("You failed to launch. \n");
     return EXIT;
   }
 }
 
-Screens checkCollision(Missile t_missile, Target t_target)
+Screens checkCollision(Missile *t_missile, Target *t_target) // checking collision
 {
-	bool x = false;
-	bool y = false;
+	bool x = false; //if x was hit
+	bool y = false; //if y was hit
   if (t_missile->coordinates.x == t_target->coordinates.x)
   {
-	  std::cout << "Hit on the x axis." << "\n";
+	  printf("Hit on the x axis. \n");
 	  x = true;
   }
   if (t_missile->coordinates.y == t_target->coordinates.y)
   {
-	  std::cout << "Hit on the y axis." << "\n";
+	  printf("Hit on the y axis. \n");
 	  y = true;
   }
-  
+  if (x && y) //if both true game ends
+  {
+	printf("You destroyed the target. \n");
+	return MENU;
+  }
+	return WAR_HEADS;
 }
 
 
@@ -175,10 +182,10 @@ int main()
   target->coordinates.y = 50;
 
 
-  while(screen == MENU)
+  while(screen == MENU) //menu screen
   {
-	std::cout << "1 - Start game " << "\n";
-  	std::cout << "2 - Exit " << "\n";
+	printf("1 - Start game\n");
+  	printf("2 - Exit \n");
         std::cin >> choice;
         if (choice == 1){
 		screen = WAR_HEADS;
@@ -189,7 +196,7 @@ int main()
   }
   
 
-  while(screen == WAR_HEADS)
+  while(screen == WAR_HEADS) //select warheads screen
   {
    screen = selectWarHead(missile);
   }
@@ -207,7 +214,7 @@ int main()
   
   while(screen == COLLISION)
   {
-   screen = checkCollision(missile);
+   screen = checkCollision(missile, target);
   }
   
   // Print Target Coordinates
@@ -215,26 +222,26 @@ int main()
   //printCoordinates(target->coordinates);
 
   // Set Missile Target by dereferencing Target pointer
-  missile->target = *target;
+  //missile->target = *target;
 
   // Set Initial Position
-  missile->coordinates.x = 0;
-  missile->coordinates.y = 0;
+  //missile->coordinates.x = 0;
+  //missile->coordinates.y = 0;
 
   // Print Position
-  printf("Print Missile Position\n");
-  printCoordinates(missile->coordinates);
+  //printf("Print Missile Position\n");
+  //printCoordinates(missile->coordinates);
 
   // Update Position
-  missile->update(missile);
+ // missile->update(missile);
 
   // Print Missile Position
-  printf("Print Missile Position after an Update\n");
-  printCoordinates(missile->coordinates);
+  //printf("Print Missile Position after an Update\n");
+  //printCoordinates(missile->coordinates);
 
   // Print Missile target
-  printf("Print Missile Target Position\n");
-  printCoordinates(missile->target.coordinates);
+  //printf("Print Missile Target Position\n");
+  //printCoordinates(missile->target.coordinates);
 
   // Free Memory
   free(target);
