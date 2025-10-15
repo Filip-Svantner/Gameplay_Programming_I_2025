@@ -6,10 +6,10 @@
 // Player is a GameObject
 class Player : public GameObject
 {
-    int choice;
-    int swordSlashCooldown;
-    int shieldBashCooldown;
-    int defensiveStanceCooldown;
+    int choice = 0;
+    int swordSlashCooldown = 0;
+    int shieldBashCooldown = 0;
+    int defensiveStanceCooldown = 0;
 
 public:
     Player(std::string name, int health = 100) : GameObject(name, health) {} // Constructor to initialize name and health
