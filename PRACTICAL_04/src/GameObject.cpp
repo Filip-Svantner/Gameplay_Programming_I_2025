@@ -32,3 +32,15 @@ void GameObject::takeDamage(int damage)
     health -= damage;
     std::cout << name << " GameObject : Takes Damage : " << damage << " Health : " << health << std::endl;
 }
+
+std::string GameObject::cooldownDisplay(int t_cooldown) const
+{
+    if (t_cooldown > 0)
+    {
+        return std::to_string(t_cooldown) + " turns";
+    }
+    else
+    {
+        return "ready";
+    }
+}

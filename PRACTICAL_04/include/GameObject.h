@@ -36,6 +36,8 @@ public:
 
     // Instance method takeDamage
     void takeDamage(int);
+    
+    std::string cooldownDisplay(int t_cooldown) const;
 };
 
 #endif // GAME_OBJECT_H
