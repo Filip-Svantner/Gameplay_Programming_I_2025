@@ -82,5 +82,38 @@ void NPC::attack(GameObject &target)
 // Optionally override defend method
 void NPC::defend()
 {
-    std::cout << name << " takes a defensive stance." << std::endl;
+    srand(time(NULL));
+
+    if (groundStompShockwaveCooldown > 0)
+    {
+        groundStompShockwaveCooldown--;
+    }
+    if (clubSmashCooldown > 0)
+    {
+        clubSmashCooldown--;
+    }
+    if (thickHideCooldown > 0)
+    {
+        thickHideCooldown--;
+    }
+    if (thickHideCooldown == 0)
+    {
+        choice = rand() % 2;
+
+        if (choice == 0)
+        {
+            std::cout << name << " uses thick hide." << std::endl;
+            defending = true;
+            thickHideCooldown = 3;
+        }
+        else
+        {
+            std::cout << name << " doesn't defend." << "\n";
+        }
+    }
+    else
+    {
+        std::cout << name << " doesn't defend." << "\n";
+    }
+
 }
