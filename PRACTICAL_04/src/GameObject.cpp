@@ -30,7 +30,8 @@ void GameObject::walk()
 void GameObject::takeDamage(int damage)
 {
     health -= damage;
-    std::cout << name << " GameObject : Takes Damage : " << damage << " Health : " << health << std::endl;
+    std::cout << name << " takes damage : " << damage << std::endl;
+    std::cout << name << " health remaining : " << health << std::endl;
 }
 
 std::string GameObject::cooldownDisplay(int t_cooldown) const
