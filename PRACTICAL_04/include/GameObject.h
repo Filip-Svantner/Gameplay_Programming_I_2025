@@ -10,6 +10,7 @@ class GameObject
 protected:
     std::string name; // Protected so derived classes can access it
     int health;       // Protected so derived classes can access it
+    bool defending;
 
 public:
     // Constructor to initialize health (default is set to 100)
@@ -38,6 +39,10 @@ public:
     void takeDamage(int);
     
     std::string cooldownDisplay(int t_cooldown) const;
+
+    bool isDefending() const;
+    
+    void setDefending(bool t_isDefending);
 };
 
 #endif // GAME_OBJECT_H

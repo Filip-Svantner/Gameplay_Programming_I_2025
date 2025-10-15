@@ -44,3 +44,14 @@ std::string GameObject::cooldownDisplay(int t_cooldown) const
         return "ready";
     }
 }
+
+bool GameObject::isDefending() const
+{
+    return defending;
+}
+
+void GameObject::setDefending(bool t_isDefending)
+{
+    defending = t_isDefending;
+}
+

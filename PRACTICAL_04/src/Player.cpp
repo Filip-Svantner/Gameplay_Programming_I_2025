@@ -3,17 +3,20 @@
 #include <string>         // For std::string
 
 // Method for Player to charge at an enemy
-void Player::charge() {
+void Player::charge()
+ {
     std::cout << name << " charges at the enemy!" << std::endl;
 }
 
 // Specific implementation of walk()
-void Player::walk() {
+void Player::walk() 
+{
     std::cout << name << " walks forward." << std::endl;
 }
 
 // Implementation of pure virtual attack method
-void Player::attack(GameObject& target) {
+void Player::attack(GameObject& target) 
+{
     bool attacking;
 
     attacking = true;
@@ -87,6 +90,41 @@ void Player::attack(GameObject& target) {
 }
 
 // Optionally override defend method
-void Player::defend() {
-    std::cout << name << " takes a defensive stance." << std::endl;
+void Player::defend() 
+{
+    if (defensiveStanceCooldown > 0)
+    {
+        defensiveStanceCooldown--;
+    }
+    if (swordSlashCooldown > 0)
+    {
+        swordSlashCooldown--;
+    }
+    if (shieldBashCooldown > 0)
+    {
+        shieldBashCooldown--;
+    }
+    std::cout << "Do you want to defend? " << "\n";
+    std::cout << "1 - Yes" << "\n";
+    std::cout << "2 - No" << "\n";
+    std::cin >> choice;
+    if (choice == 1)
+    {
+        if (defensiveStanceCooldown > 0)
+        {
+            std::cout << "Not on cooldown, will be available in " << defensiveStanceCooldown << " turns" << "\n";
+        }
+        else
+        {
+            std::cout << name << " takes a defensive stance." << std::endl;
+            defending = true;
+            defensiveStanceCooldown = 3;
+        }
+    }
+    else
+    {
+        std::cout << name << " doesn't defend." << "\n";
+    }
+    
+
 }
