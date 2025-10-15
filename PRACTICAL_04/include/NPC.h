@@ -6,6 +6,10 @@
 // NPC is a GameObject
 class NPC : public GameObject
 {
+    int choice;
+    int groundStompShockwaveCooldown;
+    int clubSmashCooldown;
+    int thickHideCooldown;
 public:
     NPC(std::string name, int health = 100) : GameObject(name, health) {} // Constructor to initialize name and health
 

@@ -17,9 +17,66 @@ void NPC::walk()
 // Implementation of pure virtual attack method
 void NPC::attack(GameObject &target)
 {
-    std::cout << name << " attacks " << target.getName() << "!" << std::endl;
-    // Add logic to modify the target's health
-    target.takeDamage(10); // Example: deal 10 damage to the target
+    srand(time(NULL));
+
+    bool attacking;
+
+    attacking = true;
+
+    while (attacking)
+    {
+        if (clubSmashCooldown == 0 || groundStompShockwaveCooldown == 0)
+        {
+            choice = rand() % 2;
+
+            if (choice == 0)
+            {
+                if (clubSmashCooldown == 0)
+                {
+                    std::cout << name << " attacks " << target.getName() << " with club smash!" << std::endl;
+
+                    if (!target.isDefending())
+                    {
+                        target.takeDamage(20);
+                    }
+                    else
+                    {
+                        std::cout << target.getName() << " defended the attack" << "\n";
+                        target.setDefending(false);
+                    }
+
+                    clubSmashCooldown = 3;
+                    attacking = false;
+                }
+            }
+            else
+            {
+                if (groundStompShockwaveCooldown == 0)
+                {
+
+                    std::cout << name << " attacks " << target.getName() << " with ground stomp shockwave!" << std::endl;
+                    if (!target.isDefending())
+                    {
+                        target.takeDamage(10);
+                    }
+                    else
+                    {
+                        std::cout << target.getName() << " defended the attack" << "\n";
+                        target.setDefending(false);
+                    }
+                    groundStompShockwaveCooldown = 2;
+                    attacking = false;
+                }
+            }
+        }
+        else
+        {
+            std::cout << name << " doesn't attack" << "\n";
+            attacking = false;
+        }
+
+    }
+
 }
 
 // Optionally override defend method
