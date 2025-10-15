@@ -14,9 +14,76 @@ void Player::walk() {
 
 // Implementation of pure virtual attack method
 void Player::attack(GameObject& target) {
-    std::cout << name << " attacks " << target.getName() << "!" << std::endl;
-    // Add logic to modify the target's health
-    target.takeDamage(10); // Example: deal 10 damage to the target
+    bool attacking;
+
+    attacking = true;
+
+    while (attacking)
+    {
+        std::cout << "Choose attack: " << "\n";
+        std::cout << "1 - Sword slash (" << cooldownDisplay(swordSlashCooldown) << ") " << "\n";
+        std::cout << "2 - Shield bash (" << cooldownDisplay(shieldBashCooldown) << ") " << "\n";
+        std::cout << "0 - No attack " << "\n";
+        std::cin >> choice;
+
+        if (choice == 0)
+        {
+            std::cout << name << " doesn't attack" << "\n";
+            attacking = false;
+        }
+        else if (choice == 1)
+        {
+            if (swordSlashCooldown > 0)
+            {
+                std::cout << "Not on cooldown, will be available in " << swordSlashCooldown << " turns" << "\n";
+            }
+            else
+            {
+                std::cout << name << " attacks " << target.getName() << " with sword slash!" << std::endl;
+                
+                if (!target.isDefending())
+                {
+                    target.takeDamage(20);
+                }
+                else
+                {
+                    std::cout << target.getName() << " defended the attack" << "\n";
+                    target.setDefending(false);
+                }
+
+                swordSlashCooldown = 3;
+                attacking = false;
+            }
+        }
+        else if (choice == 2)
+        {
+            if (shieldBashCooldown > 0)
+            {
+                std::cout << "Not on cooldown, will be available in " << shieldBashCooldown << " turns" << "\n";
+            }
+            else
+            {
+                std::cout << name << " attacks " << target.getName() << " with shield bash!" << std::endl;
+                if (!target.isDefending())
+                {
+                    target.takeDamage(10);
+                }
+                else
+                {
+                    std::cout << target.getName() << " defended the attack" << "\n";
+                    target.setDefending(false);
+                }
+                shieldBashCooldown = 2;
+                attacking = false;
+            }
+        }
+        else
+        {
+            std::cout << "Invalid input." << "\n";
+        }
+
+    }
+
 }
 
 // Optionally override defend method
