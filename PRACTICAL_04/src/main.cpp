@@ -153,6 +153,10 @@ int main()
 		{
 			game.gameloop();
 		}
+		while(game.activeScreen == Game::Screens::EXIT)
+		{
+			return 0;
+		}
 	}
     cin.get();
 	return 0;
