@@ -34,6 +34,7 @@ void GameObject::takeDamage(int damage)
     std::cout << name << " health remaining : " << health << std::endl;
 }
 
+
 std::string GameObject::cooldownDisplay(int t_cooldown) const
 {
     if (t_cooldown > 0)

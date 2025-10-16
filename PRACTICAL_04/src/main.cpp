@@ -10,12 +10,70 @@ class Game
 private:
     Player player;
     NPC npc;
-
-    GameObject *winner = nullptr;
-
+	int mainChoice = 0;
+	
+	
+	
 public:
-    Game() : player("Orc (Player)"), npc("Troll (Boss)") {}
+	
+	bool runGame = true; // stores if the program is running or not
+	GameObject *winner = nullptr; 
+	
+	enum class Screens // enum class for screens
+	{
+		EXIT,
+		GAMEPLAY,
+		HOW_TO_PLAY,
+		MENU
+	};
+	
+	Screens activeScreen = Screens::MENU; // active screen
 
+
+
+
+
+    Game() : player("Orc (Player)"), npc("Troll (Boss)") {}
+	
+	void menuLoop() // menu screen loop
+	{
+		cout << "Orcs VS Trolls" << "\n";
+		cout << "1 - Start game" << "\n";
+		cout << "2 - How to play" << "\n";
+		cout << "0 - Exit" << "\n";
+		cin >> mainChoice;
+		
+		if(mainChoice > -1 && mainChoice < 3)
+		{
+			activeScreen = static_cast<Screens>(mainChoice);
+		}
+		else
+		{
+			cout << "Invalid input. " << "\n";
+		}
+	}
+	
+	void HTPLoop() // how to play screen loop
+	{
+		cout << "How to play: " << "\n";
+		cout << "Every turn you can choose out of 2 attacks. " << "\n";
+		cout << "After that you decide either you defend or not." << "\n";
+		cout << "Then is the opponent turn. " << "\n";
+		cout << "Repeat until victory." << "\n";
+		cout << "0 - back to menu." << "\n";
+		cin >> mainChoice;
+		
+		if(mainChoice==0)
+		{
+			activeScreen = Screens::MENU;
+		}
+		else
+		{
+			cout << "Invalid input. " << "\n";
+		}
+	}
+	
+	
     void gameloop()
     {
         cout << "Let make a virtual ;-) Turn Based Console Game" << endl;
@@ -40,47 +98,39 @@ public:
 
         // Uncomment to see the issue with calling the pure virtual method
         // player.attack(nullptr); // Error: Cannot call attack on Player; it must be implemented
-
+		
         // Main GameLoop
         while (player.getHealth() > 0 && npc.getHealth() > 0)
         {
-            // Player attacks NPC
-            player.attack(npc); // Player attacks NPC - Bound at runtime to Player's attack()
-            player.defend();    // Player defends - Bound at compile time to Player's defend()
-
-            // NPC attacks Player
-            npc.attack(player); // NPC attacks Player - Bound at runtime to NPC's attack()
-            npc.defend();       // NPC defends - Bound at compile time to NPC's defend()
+            // Assign Player memory address to GameObject pointer
+            GameObject *ptr_plyr = &player;
+            ptr_plyr->walk();      // Bound at runtime -> action based on pointer (Player's walk())
+            ptr_plyr->attack(npc); // Player attacks NPC through GameObject pointer - Bound at runtime to Player's attack()
+            ptr_plyr->defend();    // Player defends through GameObject pointer - Bound at runtime to Player's defend()
 
             // Assign NPC memory address to GameObject pointer
-            GameObject *ptr_go = &npc;
-            ptr_go->walk();         // Bound at runtime -> action based on pointer (NPC's walk())
-            ptr_go->attack(player); // NPC attacks Player through GameObject pointer - Bound at runtime to NPC's attack()
-            ptr_go->defend();       // NPC defends through GameObject pointer - Bound at runtime to NPC's defend()
-
-            // Assign Player memory address to GameObject pointer
-            ptr_go = &player;
-            ptr_go->walk();      // Bound at runtime -> action based on pointer (Player's walk())
-            ptr_go->attack(npc); // Player attacks NPC through GameObject pointer - Bound at runtime to Player's attack()
-            ptr_go->defend();    // Player defends through GameObject pointer - Bound at runtime to Player's defend()
+            GameObject *ptr_npc = &npc;
+            ptr_npc->walk();         // Bound at runtime -> action based on pointer (NPC's walk())
+            ptr_npc->attack(player); // NPC attacks Player through GameObject pointer - Bound at runtime to NPC's attack()
+            ptr_npc->defend();       // NPC defends through GameObject pointer - Bound at runtime to NPC's defend()
 
             // Check for winner
             if (player.getHealth() <= 0)
             {
                 winner = &npc;
+				runGame = false;
+				activeScreen = Screens::EXIT;
+				std::cout << winner->getName() << " has won the battle!" << std::endl;
                 break; // End loop if winner is determined
             }
             else if (npc.getHealth() <= 0)
             {
                 winner = &player;
+				runGame = false;
+				activeScreen = Screens::EXIT;
+				std::cout << winner->getName() << " has won the battle!" << std::endl;
                 break; // End loop if winner is determined
             }
-        }
-
-        // Output the winner
-        if (winner)
-        {
-            std::cout << winner->getName() << " has won the battle!" << std::endl;
         }
     }
 };
@@ -88,6 +138,22 @@ public:
 int main()
 {
     Game game;
-    game.gameloop();
+	while(game.runGame) // so the screens and functions work smoother
+	{
+		while (game.activeScreen == Game::Screens::MENU)
+		{
+			game.menuLoop();
+		}
+	
+		while (game.activeScreen == Game::Screens::HOW_TO_PLAY)
+		{
+			game.HTPLoop();
+		}
+		while (game.activeScreen == Game::Screens::GAMEPLAY)
+		{
+			game.gameloop();
+		}
+	}
     cin.get();
+	return 0;
 }

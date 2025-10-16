@@ -10,7 +10,7 @@ class GameObject
 protected:
     std::string name; // Protected so derived classes can access it
     int health;       // Protected so derived classes can access it
-    bool defending;
+    bool defending; // Variable to store the defending state of player or npc
 
 public:
     // Constructor to initialize health (default is set to 100)
@@ -38,10 +38,13 @@ public:
     // Instance method takeDamage
     void takeDamage(int);
     
+	// Function used for cooldown display for player
     std::string cooldownDisplay(int t_cooldown) const;
-
+	
+	// Checks if player or NPC is defending
     bool isDefending() const;
     
+	// Switch between defending and not defending
     void setDefending(bool t_isDefending);
 };
 
