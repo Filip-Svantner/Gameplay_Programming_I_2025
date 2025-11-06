@@ -49,15 +49,10 @@ void GameLoop(void)
 
     BeginDrawing();
 
-    // Update Game Data
-    // Should be outside BeginDrawing(); and EndDrawing();
-  
-
     ClearBackground(RAYWHITE);
    	
     // Draw the Game Objects
     DrawGame();
-
 
     EndDrawing();
 }
