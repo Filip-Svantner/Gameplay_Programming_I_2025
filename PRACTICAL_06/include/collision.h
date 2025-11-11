@@ -1,25 +1,25 @@
 
 #include "stdlib.h"
 
-typedef struct Circle{
+typedef struct CircleStruct{
 	
 	int x;
 	int y;
 	int radius;
-}
+}CircleStruct;
 
-typedef struct Rectangle{
+typedef struct RectangleStruct{
 	int x;
 	int y;
 	int a;
 	int b;
-}
+}RectangleStruct;
 
-bool circleToCircle(Circle* a, Circle* b)
+bool circleToCircle(CircleStruct* a, CircleStruct* b)
 {
-	int distanceX = abs(a.x - b.x;)
-	int distanceY = abs(a.y - b.y;)
-	int difference = a.radius + b.radius;
+	int distanceX = abs(a->x - b->x);
+	int distanceY = abs(a->y - b->y);
+	int difference = a->radius + b->radius;
 	
 	if (difference > distanceX || difference > distanceY)
 	{
@@ -30,15 +30,15 @@ bool circleToCircle(Circle* a, Circle* b)
 }	
 
 
-bool rectangleToRectangle(Rectangle* a, Rectangle* b)
+bool rectangleToRectangle(RectangleStruct* one, RectangleStruct* two)
 {
-	for(;b.x < b.x+b.a;b.x++)
+	for(;two->x < two->x + two->a ;two->x++)
 	{
-		if(b.x >= a.x && b.x <= a.x + a.a)
+		if(two->x >= one->x && two->x <= one->x + one->a)
 		{
-			for(;b.y < b.y + b.b, b.y++)
+			for(;two->y < two->y + two->b; two->y++)
 			{
-				if(b.y >= a.y && b.y <= a.y + a.b)
+				if(two->y >= one->y && two->y <= one->y + one->b)
 				{
 					return true;
 				}

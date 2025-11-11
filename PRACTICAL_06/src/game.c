@@ -11,7 +11,7 @@ int circlePosY = 300; // Default y position of a tree (circle)
 int distance = 121*sqrt(2); // side of the pythagorean triangle (2 * distance^2 = radius^2)
 int radius = 242; // Radius of a circle the trees are in 
 
-Circle crowns[8] = {(Circle){circlePosX, circlePosY - radius, 50}, (Circle){circlePosX , circlePosY + radius, 50}, (Circle){circlePosX - radius, circlePosY, 50}, (Circle){circlePosX + radius, circlePosY, 50}, (Circle){circlePosX + distance, circlePosY + distance, 50}, (Circle){circlePosX + distance, circlePosY - distance, 50}, (Circle){circlePosX - distance, circlePosY + distance, 50}, (Circle){circlePosX - distance, circlePosY - distance, 50} };
+
 
 Color playerColor = WHITE;
 Color trunks = BROWN;
@@ -28,12 +28,12 @@ int velocity = 5; // value by which the position change
 
 bool isDrawing = true;
 
-Circle playerCircle;
-Rectangle playerRectangle;
+CircleStruct playerCircle;
 
-Circle circleToCheck;
-Rectangle rectangleToCheck;
+RectangleStruct playerRectangle;
 
+CircleStruct crownsArray[8];
+RectangleStruct trunksArray[8];
 
 
 void InitGame() {
@@ -45,17 +45,44 @@ void InitGame() {
     ImageFlipHorizontal(&image);
     spriteLeft = LoadTextureFromImage(image);
     sprite = spriteRight;
+	
+	playerCircle = (CircleStruct){(int)(position.x) + 82, (int)(position.y) + 110, 50};
+	playerRectangle = (RectangleStruct){(int)(position.x) + 45, (int)(position.y) + 65, 75, 90};
+	crownsArray[0] = (CircleStruct){circlePosX, circlePosY - radius, 50};
+	crownsArray[1] = (CircleStruct){circlePosX , circlePosY + radius, 50};
+	crownsArray[2] = (CircleStruct){circlePosX - radius, circlePosY, 50};
+	crownsArray[3] = (CircleStruct){circlePosX + radius, circlePosY, 50};
+	crownsArray[4] = (CircleStruct){circlePosX + distance, circlePosY + distance, 50};
+	crownsArray[5] = (CircleStruct){circlePosX + distance, circlePosY - distance, 50};
+	crownsArray[6] = (CircleStruct){circlePosX - distance, circlePosY + distance, 50};
+	crownsArray[7] = (CircleStruct){circlePosX - distance, circlePosY - distance, 50};
+	trunksArray[0] = (RectangleStruct){circlePosX - 20, circlePosY - radius, 40, 60};
+	trunksArray[1] = (RectangleStruct){circlePosX - 20, circlePosY + radius, 40, 60};
+	trunksArray[2] = (RectangleStruct){circlePosX + radius - 20, circlePosY, 40, 60};
+	trunksArray[3] = (RectangleStruct){circlePosX - radius - 20, circlePosY, 40, 60};
+	trunksArray[4] = (RectangleStruct){circlePosX + distance - 20, circlePosY - distance, 40, 60};
+	trunksArray[5] = (RectangleStruct){circlePosX + distance - 20, circlePosY + distance, 40, 60};
+	trunksArray[6] = (RectangleStruct){circlePosX - distance - 20, circlePosY - distance, 40, 60}; 
+	trunksArray[7] = (RectangleStruct){circlePosX - distance - 20, circlePosY + distance, 40, 60};
 }
 
 void UpdateGame() {
 	
-	playerCircle = {(Circle){position.x, position.y, 50}};
-	playerRectangle = {
-	
-	for(i = 0; i < 8; i++)
+	for(int i = 0; i < 8; i++)
 	{
-		Circle circleToCircle(playerCircle, crowns[i]);
+		if(circleToCircle(&playerCircle, &crownsArray[i]))
+		{
+			playerColor = RED;
+		}
 	}
+	
+	for(int e = 0; e < 8; e++)
+	{
+		if(rectangleToRectangle(&playerRectangle, &trunksArray[e]))
+		{
+			playerColor = BLUE;
+		}
+	}		
     
     //int of KEY_RIGHT = 1, KEY_LEFT = -1
     direction.x = (int)(IsKeyDown(KEY_RIGHT)) - (int)(IsKeyDown(KEY_LEFT));
@@ -107,7 +134,9 @@ void DrawGame() {
 	Pentagram();
 	Trunks();
 	Crowns();
-     
+    
+	DrawRectangle(position.x + 45, position.y + 65, 75, 90, GREEN);
+	DrawCircle(position.x + 82, position.y + 110, 50, YELLOW);
 	DrawTextureEx(sprite, position, 0, 5, playerColor);
     }
     
