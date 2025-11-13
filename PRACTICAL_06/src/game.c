@@ -18,6 +18,9 @@ Color trunks = BROWN;
 Color crowns = GREEN;
 Color background = GRAY;
 
+Color playerHitboxCrc = YELLOW;
+Color playerHitboxRct = GREEN;
+
 //sprite variables
 Texture2D spriteRight, spriteLeft, sprite; // Stores textures
 Image image; // used for mirroring the sprite texture
@@ -27,6 +30,7 @@ Vector2 position = {400 - 80, 300 - 80}; // position of player (moved of center,
 int velocity = 5; // value by which the position change
 
 bool isDrawing = true;
+bool debug = false;
 
 CircleStruct playerCircle;
 
@@ -45,9 +49,7 @@ void InitGame() {
     ImageFlipHorizontal(&image);
     spriteLeft = LoadTextureFromImage(image);
     sprite = spriteRight;
-	
-	playerCircle = (CircleStruct){(int)(position.x) + 82, (int)(position.y) + 110, 50};
-	playerRectangle = (RectangleStruct){(int)(position.x) + 45, (int)(position.y) + 65, 75, 90};
+
 	crownsArray[0] = (CircleStruct){circlePosX, circlePosY - radius, 50};
 	crownsArray[1] = (CircleStruct){circlePosX , circlePosY + radius, 50};
 	crownsArray[2] = (CircleStruct){circlePosX - radius, circlePosY, 50};
@@ -68,22 +70,51 @@ void InitGame() {
 
 void UpdateGame() {
 	
-	for(int i = 0; i < 8; i++)
+	//printf("Updating\n");
+	
+	playerCircle = (CircleStruct){(int)(position.x) + 82, (int)(position.y) + 110, 50}; //updates the circle around the player (hitbox)
+	playerRectangle = (RectangleStruct){(int)(position.x) + 45, (int)(position.y) + 65, 75, 90}; //updates the rectangle around the player (hitbox)
+	int counterCrc = 0;
+	int counterRct = 0;
+	
+	//printf("Forlooping 1\n");
+	for(int i = 0; i < 8; i++) // collision check for circles
 	{
+		
 		if(circleToCircle(&playerCircle, &crownsArray[i]))
 		{
-			playerColor = RED;
+			playerHitboxCrc = RED;
+		}
+		else 
+		{
+			counterCrc++;
 		}
 	}
-	
-	for(int e = 0; e < 8; e++)
+	if (counterCrc == 8)
+	{
+		playerHitboxCrc = YELLOW;
+	}
+		
+	//printf("Forlooping 2\n");
+	for(int e = 0; e < 8; e++) // collision check for rectangles
 	{
 		if(rectangleToRectangle(&playerRectangle, &trunksArray[e]))
 		{
-			playerColor = BLUE;
+			printf(" doing no %d", e);
+			playerHitboxRct = BLUE;
 		}
-	}		
+		else 
+		{
+			counterRct++;
+		}
+	}	
+		
+	if (counterRct == 8)
+	{
+		playerHitboxRct = GREEN;
+	}
     
+	//printf("after forlooping \n");
     //int of KEY_RIGHT = 1, KEY_LEFT = -1
     direction.x = (int)(IsKeyDown(KEY_RIGHT)) - (int)(IsKeyDown(KEY_LEFT));
     direction.y = (int)(IsKeyDown(KEY_DOWN)) - (int)(IsKeyDown(KEY_UP));
@@ -124,10 +155,19 @@ void UpdateGame() {
     {
 	isDrawing = true;
     }
+	
+	if(IsKeyPressed(KEY_D))
+	{
+		debug = true;
+	}
+	
+	//printf("not forlooping \n");
 }
 
 void DrawGame() {
-
+	
+	printf("Drawing\n");
+	
     if (isDrawing) {
 	DrawRectangle(0, 0, 800, 600, background);
     
@@ -135,8 +175,11 @@ void DrawGame() {
 	Trunks();
 	Crowns();
     
-	DrawRectangle(position.x + 45, position.y + 65, 75, 90, GREEN);
-	DrawCircle(position.x + 82, position.y + 110, 50, YELLOW);
+	if (debug)
+	{
+		DrawRectangle(position.x + 45, position.y + 65, 75, 90, playerHitboxRct);
+		DrawCircle(position.x + 82, position.y + 110, 50, playerHitboxCrc);
+	}
 	DrawTextureEx(sprite, position, 0, 5, playerColor);
     }
     
