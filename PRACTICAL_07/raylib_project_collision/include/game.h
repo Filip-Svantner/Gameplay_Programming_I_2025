@@ -12,16 +12,16 @@
 typedef struct GameData
 {
 	PlayerCircle playerCircle;		// Player circle
-	PlayerAABB playerAABB;
-	PlayerCapsule playerCapsule;
+	PlayerAABB playerAABB;          // Player AABB
+	PlayerCapsule playerCapsule;    // Player Capsule
 	NPC npcs[NUM_NPCS]; // Array of NPCs (Non-Player Characters / could also be obstacles)
 
 	int points;			  // Game Points
 	int collisionCounter; // Counter for collisions
 	char message[200];	  // Message buffer for collision status
-	bool drawCrc;
-	bool drawRect;
-	bool drawCps;
+	bool drawCrc;         // checks if playerCircle is being drawn
+	bool drawRect;        // checks if playerAABB is being drawn
+	bool drawCps;         // checks if playerCapsule is being drawn
 } GameData;
 
 // Function prototypes

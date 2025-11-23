@@ -28,10 +28,10 @@ static void NPCFactory(NPC *npc, int typeIndex)
 		break;
 	case 3:
 		npc->type = RAY;
-		npc->collider.ray.p = c2V(100.0f,200.0f);
-		npc->collider.ray.d = c2V(0.0f,1.0f);
-		npc->collider.ray.t = 1.0f;
-		npc->color = BLUE;
+		npc->collider.ray.p = c2V(100.0f,200.0f); // position of ray
+		npc->collider.ray.d = c2V(0.0f,1.0f); // direction of ray
+		npc->collider.ray.t = SCREEN_HEIGHT; // distance from position to endpoint
+		npc->color = BLUE; // color
 		break;
 	}
 
@@ -105,14 +105,14 @@ static void DrawNPC(const NPC *npc)
 	}
 	case RAY:
 	{
-		Vector2 start = {npc->collider.ray.p.x,npc->collider.ray.p.y };
-		Vector2 end = {npc->collider.ray.p.x, SCREEN_HEIGHT};
+		Vector2 start = {npc->collider.ray.p.x,npc->collider.ray.p.y }; // position of start
+		Vector2 end = {npc->collider.ray.p.x, SCREEN_HEIGHT}; // position of end
 
 		DrawLineEx(
-			start,
-			end,
-			5,
-			npc->color
+			start, // start pos
+			end, // end pos
+			5, // thickness
+			npc->color // color
 		);
 		break;
 	}
@@ -126,7 +126,8 @@ void InitGame(GameData *data)
 
 	data->points = 0; // Initialise points to zero
 
-	data->drawCps = false;
+	//initialize what player shape is drawn first
+	data->drawCps = false; 
 	data->drawCrc = true;
 	data->drawRect = false;
 
@@ -160,6 +161,7 @@ void InitGame(GameData *data)
 // Update Game Data
 void UpdateGame(GameData *data)
 {
+	//switching between player shapes through keys
 	if(IsKeyPressed(KEY_O))
 	{
 		data->drawCps = false;
@@ -244,16 +246,54 @@ void UpdateGame(GameData *data)
 			break;
 
 		case AABB:
-			// Circle vs AABB collision (cute_c2 built-in)
-			collision = c2CircletoAABB(data->playerCircle.circle, npc->collider.aabb);
+			// AABB collisions
+			if(data->drawCrc)
+			{
+				collision = c2CircletoAABB(data->playerCircle.circle, npc->collider.aabb);
+			}
+			else if(data->drawRect)
+			{
+				collision = c2AABBtoAABB(npc->collider.aabb, data->playerAABB.aabb);
+			}
+			else if(data->drawCps)
+			{
+				collision = c2AABBtoCapsule(npc->collider.aabb, data->playerCapsule.capsule);
+			}
+			
 			break;
 
 		case CAPSULE:
-			// Circle vs Capsule collision (cute_c2 built-in)
-			collision = c2CircletoCapsule(data->playerCircle.circle, npc->collider.capsule);
+			// Capsule collisions
+			if(data->drawCrc)
+			{
+				collision = c2CircletoCapsule(data->playerCircle.circle, npc->collider.capsule);
+			}
+			else if(data->drawRect)
+			{
+				collision = c2AABBtoCapsule(data->playerAABB.aabb, npc->collider.capsule);
+			}
+			else if(data->drawCps)
+			{
+				collision = c2CapsuletoCapsule(data->playerCapsule.capsule, npc->collider.capsule);
+			}
+			
 			break;
 		
 		case RAY:
+		//ray collisions
+		c2Raycast ray;
+		if(data->drawCrc)
+			{
+				collision = c2RaytoCircle(npc->collider.ray,data->playerCircle.circle,&ray);
+			}
+			else if(data->drawRect)
+			{
+				collision = c2RaytoAABB(npc->collider.ray,data->playerAABB.aabb,&ray);
+			}
+			else if(data->drawCps)
+			{
+				collision = c2RaytoCapsule(npc->collider.ray,data->playerCapsule.capsule,&ray);
+			}
 			break;
 		}
 		
@@ -300,25 +340,66 @@ void DrawGame(const GameData *data)
 	for (int i = 0; i < NUM_NPCS; i++)
 		DrawNPC(&data->npcs[i]);
 
-	// Draw Player Texture (centred on circle)
-	Vector2 position = {data->playerCircle.circle.p.x, data->playerCircle.circle.p.y};
+	
 
-	// Calculate texture position to centre it on the player circle
-	Vector2 playerTexturePosition = {
-		position.x - data->playerCircle.texture.width / 2,
-		position.y - data->playerCircle.texture.height / 2};
+	if(data->drawCrc)
+	{
+		// Draw Player Texture (centred on circle)
+		Vector2 position = {data->playerCircle.circle.p.x, data->playerCircle.circle.p.y};
 
-	// Draw Player Texture centred
-	DrawTextureV(data->playerCircle.texture,	// Player Texture
-				 playerTexturePosition, // Position (centred)
-				 WHITE					// Tint color
-	);
+		// Calculate texture position to centre it on the player circle
+		Vector2 playerTexturePosition = {
+			position.x - data->playerCircle.texture.width / 2,
+			position.y - data->playerCircle.texture.height / 2};
+
+		// Draw Player Texture centred
+		DrawTextureV(data->playerCircle.texture,	// Player Texture
+				 	playerTexturePosition, 	// Position (centred)
+					 WHITE					// Tint color
+		);
 
 	// Player draw over NPCs note Draw Last | Draws on Top | Draw Order
-	DrawCircleV(position,			   // Position
-				data->playerCircle.circle.r, // Radius
-				data->playerCircle.color	   // Color
-	);								   // Draw Player
+		DrawCircleV(position,			   // Position
+					data->playerCircle.circle.r, // Radius
+					data->playerCircle.color	   // Color
+		);								   // Draw PlayerCrc
+	}
+	if(data->drawRect)
+	{
+		//position and size of rect so the mouse is in the middle
+		Vector2 position = {data->playerAABB.aabb.min.x, data->playerAABB.aabb.min.y}; // start position of rect
+		Vector2 size = {40, 40}; // size of rect
+
+		DrawRectangleV(
+			position, // position x, y
+			size, // size
+			data->playerAABB.color // color
+		); // draw playerRect
+	}
+	if(data->drawCps)
+	{
+		DrawCircle(
+			data->playerCapsule.capsule.a.x, // pos x
+			data->playerCapsule.capsule.a.y, // pos y
+			data->playerCapsule.capsule.r, // radius
+			data->playerCapsule.color // color
+		);
+
+		DrawCircle(
+			data->playerCapsule.capsule.b.x, // pos x
+			data->playerCapsule.capsule.b.y, // pos y
+			data->playerCapsule.capsule.r, // radius
+			data->playerCapsule.color // color
+		);
+		DrawLine(
+			data->playerCapsule.capsule.a.x, // starting pos x
+			data->playerCapsule.capsule.a.y, // starting pos y
+			data->playerCapsule.capsule.b.x, // ending pos x
+			data->playerCapsule.capsule.b.y, // ending pos y
+			data->playerCapsule.color // color
+		);
+	}
+
 
 	// Draw Collision Message
 	// Center the text at the bottom of the screen

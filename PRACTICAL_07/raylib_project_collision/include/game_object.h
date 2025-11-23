@@ -10,7 +10,7 @@ typedef enum
 	CIRCLE, // Circle shape
 	AABB,	// Axis-Aligned Bounding Box shape
 	CAPSULE, // Capsule shape
-	RAY
+	RAY      // Ray shape
 } ColliderType;
 
 // NPC (Non-Player Character) structure
@@ -28,7 +28,7 @@ typedef struct
 		c2Circle circle;   // center+radius
 		c2AABB aabb;	   // min/max
 		c2Capsule capsule; // a,b endpoints + r
-		c2Ray ray;
+		c2Ray ray;         // position, direction, distance
 	} collider;
 
 } NPC;
@@ -43,14 +43,14 @@ typedef struct
 
 typedef struct 
 {
-	c2AABB aabb;
-	Color color;
+	c2AABB aabb; // Player represented as an AABB
+	Color color; // Color for rendering
 }PlayerAABB;
 
 typedef struct 
 {
-	c2Capsule capsule;
-	Color color;
+	c2Capsule capsule; // Player represented as a capsule
+	Color color;       // Color for rendering
 }PlayerCapsule;
 
 
