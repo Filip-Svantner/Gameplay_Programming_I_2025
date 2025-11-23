@@ -19,6 +19,9 @@ typedef struct GameData
 	int points;			  // Game Points
 	int collisionCounter; // Counter for collisions
 	char message[200];	  // Message buffer for collision status
+	bool drawCrc;
+	bool drawRect;
+	bool drawCps;
 } GameData;
 
 // Function prototypes

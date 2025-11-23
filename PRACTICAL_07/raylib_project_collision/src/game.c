@@ -126,6 +126,10 @@ void InitGame(GameData *data)
 
 	data->points = 0; // Initialise points to zero
 
+	data->drawCps = false;
+	data->drawCrc = true;
+	data->drawRect = false;
+
 	data->collisionCounter = 0; // Initialise collision counter to zero
 	data->message[0] = '\0';	// Initialise message to empty string
 
@@ -138,7 +142,16 @@ void InitGame(GameData *data)
 	data->playerCircle.circle.r = 10.0f;									  // Player radius note float
 	data->playerCircle.color = GREEN;										  // Player color
 
-	
+	// Initialise player AABB
+	data->playerAABB.aabb.min = c2V(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+	data->playerAABB.aabb.max = c2V(SCREEN_WIDTH / 2 + 20, SCREEN_HEIGHT / 2 - 20);
+	data->playerAABB.color = GREEN;
+
+	// Initialise player capsule
+	data->playerCapsule.capsule.a = c2V(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+	data->playerCapsule.capsule.b = c2V(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 30);
+	data->playerCapsule.capsule.r = 5.0f;
+	data->playerCapsule.color = GREEN;
 
 	// Load player texture
 	data->playerCircle.texture = LoadTexture("resources/player.png");
@@ -147,6 +160,26 @@ void InitGame(GameData *data)
 // Update Game Data
 void UpdateGame(GameData *data)
 {
+	if(IsKeyPressed(KEY_O))
+	{
+		data->drawCps = false;
+		data->drawCrc = true;
+		data->drawRect = false;
+	}
+	if(IsKeyPressed(KEY_U))
+	{
+		data->drawCps = false;
+		data->drawCrc = false;
+		data->drawRect = true;
+	}
+	if(IsKeyPressed(KEY_I))
+	{
+		data->drawCps = true;
+		data->drawCrc = false;
+		data->drawRect = false;
+	}
+
+
 	// Player follows mouse position
 	Vector2 mousePosition = GetMousePosition(); // raylib vector2
 
@@ -156,6 +189,10 @@ void UpdateGame(GameData *data)
 	{
 		// Update player position based on mouse
 		data->playerCircle.circle.p = c2V(mousePosition.x, mousePosition.y);
+		data->playerAABB.aabb.min = c2V(mousePosition.x - 20, mousePosition.y - 20);
+		data->playerAABB.aabb.max = c2V(mousePosition.x + 20, mousePosition.y + 20);
+		data->playerCapsule.capsule.a = c2V(mousePosition.x - 15, mousePosition.y - 15);
+		data->playerCapsule.capsule.b = c2V(mousePosition.x + 15, mousePosition.y + 15);
 	}
 
 	// Flag to track if any collision occurs
@@ -173,7 +210,18 @@ void UpdateGame(GameData *data)
 		{
 		case CIRCLE:
 			// Circle vs Circle collision (cute_c2 built-in)
-			collision = c2CircletoCircle(npc->collider.circle, data->playerCircle.circle);
+			if(data->drawCrc)
+			{
+				collision = c2CircletoCircle(npc->collider.circle, data->playerCircle.circle);
+			}
+			else if(data->drawRect)
+			{
+				collision = c2CircletoAABB(npc->collider.circle, data->playerAABB.aabb);
+			}
+			else if(data->drawCps)
+			{
+				collision = c2CircletoCapsule(npc->collider.circle, data->playerCapsule.capsule);
+			}
 			if (collision)
 			{
 				// Compute one or two points that represent the point of contact.
