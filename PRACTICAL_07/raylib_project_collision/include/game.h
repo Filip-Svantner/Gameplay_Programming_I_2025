@@ -11,7 +11,9 @@
 // Game data structure
 typedef struct GameData
 {
-	Player player;		// Player circle
+	PlayerCircle playerCircle;		// Player circle
+	PlayerAABB playerAABB;
+	PlayerCapsule playerCapsule;
 	NPC npcs[NUM_NPCS]; // Array of NPCs (Non-Player Characters / could also be obstacles)
 
 	int points;			  // Game Points
