@@ -5,6 +5,26 @@
 
 #include "player.h"
 
+PlayerState *createPlayerState(Player *t_player)
+{
+	PlayerState *state = (PlayerState *)malloc(sizeof(PlayerState));
+	state->x = t_player->x;
+	state->y = t_player->y;
+	state->color = t_player->color;
+	state->health = t_player->health;
+	return state;
+}
+Memento *createMemento(PlayerState *t_pState)
+{
+	Memento *memento = (Memento *)malloc(sizeof(Memento));
+	memento->state = t_pState;
+	return memento;
+}
+PlayerState *getPlayerState(Memento *t_memento)
+{
+	return t_memento->state;
+}
+
 // Keep player in screen bounds
 void ClampPlayerOnScreen(Player *player)
 {
@@ -34,6 +54,7 @@ void Idle(Player *player, float deltaTime)
 // Move player up
 void MoveUp(Player *player)
 {
+	savePlayerState(player);
 	// Simple move up
 	player->y -= 1;
 	player->color = GREEN; // Change color to default color
@@ -44,6 +65,7 @@ void MoveUp(Player *player)
 // Move up and Fire
 void MoveUpFire(Player *player)
 {
+	savePlayerState(player);
 	// Move up and fire
 	player->y -= 1;
 	player->x -= 3; // Recoil effect
@@ -55,6 +77,7 @@ void MoveUpFire(Player *player)
 // Move player down
 void MoveDown(Player *player)
 {
+	savePlayerState(player);
 	// Simple move down
 	player->y += 1;
 	player->color = GREEN; // Change color to default color
@@ -65,6 +88,7 @@ void MoveDown(Player *player)
 // Move player left
 void MoveLeft(Player *player)
 {
+	savePlayerState(player);
 	// Simple move left
 	player->x -= 1;
 	player->color = GREEN; // Change color to default color
@@ -75,6 +99,7 @@ void MoveLeft(Player *player)
 // Move player right
 void MoveRight(Player *player)
 {
+	savePlayerState(player);
 	// Simple move right
 	player->x += 1;
 	player->color = GREEN; // Change color to default color
@@ -85,6 +110,7 @@ void MoveRight(Player *player)
 // Player fires
 void Fire(Player *player)
 {
+	savePlayerState(player);
 	// Simple Recoil effect
 	player->x -= 3;
 	player->color = RED; // Change color to indicate firing
@@ -94,6 +120,7 @@ void Fire(Player *player)
 
 void Jump(Player *player)
 {
+	savePlayerState(player);
 	// Simple jump effect
 	player->y -= 10;
 	player->color = DARKGREEN; // Change color to indicate Jumping
@@ -103,10 +130,23 @@ void Jump(Player *player)
 
 void JumpFire(Player *player)
 {
+	savePlayerState(player);
 	// Simple jump and fire effect
 	player->y -= 10;
 	player->x -= 3;
 	player->color = RED; // Change color to indicate firing
 	ClampPlayerOnScreen(player);
 	printf("\n\nJumping and Firing\n\n");
+}
+
+//save the player state to memento varible in player
+void savePlayerState(Player *player)
+{
+	PlayerState *state = createPlayerState(player);
+	player->memento = createMemento(state);
+}
+
+void undo(Player *player)
+{
+	player->state = getPlayerState(player->memento);
 }
