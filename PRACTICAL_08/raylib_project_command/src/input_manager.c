@@ -8,25 +8,60 @@ void InitInputManager()
     // Initialize input sources (keyboard, controller, etc.)
 }
 
+Command lastCommand;
+lastCommand |= NONE;
+bool canRedo = false;
+
 // Sample input polling
 Command PollInput()
 {
     // Check keyboard input
 
     Command command = NONE;
-
+    if(IsKeyDown(KEY_Y))
+    {
+        command |= UNDO;
+        canRedo = true;
+    }
+    if(IsKeyDown(KEY_X))
+    {
+        if(canRedo)
+        {
+            command = lastCommand;
+            canRedo = false;
+        }
+    }
     if (IsKeyDown(KEY_W) || IsKeyDown(KEY_UP))
+    {
         command |= MOVE_UP;
+        lastCommand = command;
+    }
     if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
+    {
         command |= MOVE_DOWN;
+        lastCommand = command;
+    }
     if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT))
+    {
         command |= MOVE_LEFT;
+        lastCommand = command;
+    }
     if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT))
+    {
         command |= MOVE_RIGHT;
+        lastCommand = command;
+    }
     if (IsKeyPressed(KEY_SPACE))
+    {
         command |= JUMP;
+        lastCommand = command;
+    }
     if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+    {
         command |= FIRE;
+        lastCommand = command;
+    }
+    
 
     TraceLog(LOG_INFO, "Keyboard Command %d", command);
 

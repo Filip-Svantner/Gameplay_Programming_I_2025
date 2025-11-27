@@ -10,7 +10,10 @@ void ExecuteCommand(Command command, Player *player, float deltaTime)
         Idle(player, deltaTime);
         return; // Nothing to process
     }
-
+    if (IsCommandActive(command, UNDO))
+    {
+        undo(player);
+    }
     // Handle basic movement
     // MOVE DOWN, LEFT, RIGHT are single commands (no combos)
     // Handle them directly
