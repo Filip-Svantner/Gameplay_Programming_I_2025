@@ -8,8 +8,8 @@ void InitInputManager()
     // Initialize input sources (keyboard, controller, etc.)
 }
 
-Command lastCommand;
-lastCommand |= NONE;
+Command lastCommand = NONE;
+
 bool canRedo = false;
 
 // Sample input polling

@@ -149,4 +149,8 @@ void savePlayerState(Player *player)
 void undo(Player *player)
 {
 	player->state = getPlayerState(player->memento);
+	player->x = player->state->x;
+	player->y = player->state->y;
+	player->color = player->state->color;
+	player->health = player->state->health;
 }
