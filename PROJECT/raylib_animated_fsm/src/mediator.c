@@ -7,6 +7,8 @@
 #include "./utils/input_manager.h"
 #include "./utils/ai_manager.h"
 
+#include "./utils/utils.h"
+
 // For a grand explanation on Mediator Pattern see
 // https://www.geeksforgeeks.org/mediator-design-pattern/
 
@@ -27,28 +29,6 @@ Mediator *CreateMediator(GameObject *object)
 	Mediator *mediator = (Mediator *)malloc(sizeof(Mediator));
 	mediator->object = object;
 	return mediator;
-}
-
-/**
- * DirectionAxis : Figures out which way the poor character is facing.
- *
- * Looks at the movement axis and decides the direction for animations,
- * saving you the hassle of guessing whether they're meant to be going
- * left, right, up, or just wandering about like a lost sheep.
- *
- * @axis: The movement vector we're basing the direction on.
- *
- * Handy inside the Player logic for picking the right animation frames,
- * so you don't end up moonwalking by accident.
- */
-
-static Direction DirectionAxis(Vector2 axis)
-{
-	// Axis > zero, zero
-	if (fabsf(axis.x) > fabsf(axis.y))
-		return (axis.x > 0.0f) ? RIGHT : LEFT;
-	else
-		return (axis.y > 0.0f) ? DOWN : UP;
 }
 
 /**
@@ -214,6 +194,17 @@ int MediatorUpdateMenu(int whatButtonActive)
 	}
 
 	return whatButtonActive;
+}
+
+bool MediatorUpdateGameOver()
+{
+	Command command = PollInput();
+
+	if(IsCommandActive(command, RESTART_GAME))
+	{
+		return 1;
+	}
+	return 0;
 }
 
 /**

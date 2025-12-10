@@ -26,6 +26,8 @@ void MediatorUpdateNPC(Mediator *mediator, float deltaTime);
 
 int MediatorUpdateMenu(int whatButtonActive);
 
+bool MediatorUpdateGameOver();
+
 // Mediator Cleanup
 void DeleteMediator(Mediator *mediator);
 

@@ -1,4 +1,5 @@
 #include "./gameobjects/player.h"
+#include "./utils/utils.h"
 
 /**
  * InitPlayer - Spins up a fresh Player.
@@ -169,28 +170,6 @@ void InitPlayerFSM(GameObject *object)
 }
 
 /**
- * PlayerMove - Shuffles the Player along the input axis.
- *
- * Updates both position and collider so collisions don't think
- * we're still back where we started three seconds ago.
- */
-
-void PlayerMove(Player *player, Vector2 inputAxis, float deltaTime)
-{
-	float speed = 130.0f;
-
-	player->base.position.x += inputAxis.x * speed * deltaTime;
-	player->base.position.y += inputAxis.y * speed * deltaTime;
-
-	// Hold on screen
-	ClampGameObjectOnScreen(&player->base);
-
-	// Update Collider
-	player->base.collider.p.x = player->base.position.x;
-	player->base.collider.p.y = player->base.position.y;
-}
-
-/**
  * SelectRandomIdleAnimation - Picks a random idle from the sheet.
  *
  * Just to keep the lad from looking like a statue. Chooses one of several
@@ -332,13 +311,13 @@ void SelectRandomIdleAnimation(GameObject *object, float deltaTime)
 
 void PlayerEnterIdle(GameObject *object, float deltaTime)
 {
-	Player *player = (Player *)object;
+	//Player *player = (Player *)object;
 	// printf("\n%s -> ENTER -> Idle\n", object->name);
 	// printf("Stamina: %.1f, Mana: %.1f\n\n", player->stamina, player->mana);
 
-	if (player->base.previousState != player->base.currentState && player->base.currentState == STATE_IDLE)
+	if (object->previousState != object->currentState && object->currentState == STATE_IDLE)
 	{
-		SelectRandomIdleAnimation(&player->base, deltaTime);
+		SelectRandomIdleAnimation(object, deltaTime);
 	}
 }
 
@@ -380,7 +359,7 @@ void PlayerExitIdle(GameObject *object, float deltaTime)
  * at the matching sprites in the sheet.
  */
 
-static void InitWalkAnimation(Player *player)
+static void InitWalkAnimation(GameObject *object)
 {
 	// WALK UP (Row 9)
 	static Rectangle walk_UP[9] = {
@@ -434,8 +413,6 @@ static void InitWalkAnimation(Player *player)
 		{512, 704, 64, 64}	// Frame 9: Row 12, Column 9
 	};
 
-	GameObject *object = &player->base;
-
 	switch (object->currentDirection)
 	{
 	case UP:
@@ -460,7 +437,7 @@ void PlayerEnterWalking(GameObject *object, float deltaTime)
 	printf("\n%s -> ENTER -> Walking\n", object->name);
 	printf("Stamina: %.1f, Mana: %.1f\n\n", player->stamina, player->mana);
 	// Complete the remainder of the method
-	InitWalkAnimation(player);
+	InitWalkAnimation(object);
 }
 
 void PlayerUpdateWalking(GameObject *object, float deltaTime)
@@ -471,13 +448,13 @@ void PlayerUpdateWalking(GameObject *object, float deltaTime)
 	// Complete the remainder of the method
 
 	// Move according to inputAxis
-	PlayerMove(player, object->inputAxis, deltaTime);
+	GameObjectMove(object, object->inputAxis, deltaTime);
 
 	// Check if moving and direction changed since last frame
 	if (Vector2Length(object->inputAxis) > 0.0f &&
 		object->currentDirection != object->previousDirection)
 	{
-		InitWalkAnimation(player);
+		InitWalkAnimation(object);
 		object->previousDirection = object->currentDirection;
 	}
 
@@ -505,7 +482,7 @@ void PlayerExitWalking(GameObject *object, float deltaTime)
  * Uses the big 192x192 attack frames further down the sprite sheet.
  */
 
-static void InitAttackAnimation(Player *player)
+static void InitAttackAnimation(GameObject *object)
 {
 	// ATTACK UP (Row 48)
 	static Rectangle sword_attack_UP[6] = {
@@ -547,8 +524,6 @@ static void InitAttackAnimation(Player *player)
 		{960, 3528, 192, 192}  // Frame 6: Row 57, Column 6
 	};
 
-	GameObject *object = &player->base;
-
 	switch (object->currentDirection)
 	{
 	case UP:
@@ -574,7 +549,7 @@ void PlayerEnterAttacking(GameObject *object, float deltaTime)
 	printf("Stamina: %.1f, Mana: %.1f\n\n", player->stamina, player->mana);
 	// Complete the remainder of the method
 	// Example: Deduct some stamina when attacking
-	InitAttackAnimation(player);
+	InitAttackAnimation(object);
 }
 
 void PlayerUpdateAttacking(GameObject *object, float deltaTime)
@@ -586,13 +561,13 @@ void PlayerUpdateAttacking(GameObject *object, float deltaTime)
 	// Check if the attack should end or be interrupted (e.g., stamina depletion)
 
 	// Move according to inputAxis
-	PlayerMove(player, object->inputAxis, deltaTime);
-
+	GameObjectMove(object, object->inputAxis, deltaTime);
+	
 	// Check if moving and direction changed since last frame
 	if (Vector2Length(object->inputAxis) > 0.0f &&
 		object->currentDirection != object->previousDirection)
 	{
-		InitAttackAnimation(player);
+		InitAttackAnimation(object);
 		object->previousDirection = object->currentDirection;
 	}
 
@@ -623,8 +598,19 @@ void PlayerEnterShielding(GameObject *object, float deltaTime)
 	Player *player = (Player *)object;
 	printf("\n%s -> ENTER -> Sheilding\n", object->name);
 	printf("Stamina: %.1f, Mana: %.1f\n\n", player->stamina, player->mana);
-	// Complete the remainder of the method
-	// Example: Deduct some stamina for shielding
+
+	Rectangle sheilding[8] = {
+		{0, 384, 64, 64},	// Frame 1: Row 7, Column 1
+		{64, 384, 64, 64},	// Frame 2: Row 7, Column 2
+		{128, 384, 64, 64}, // Frame 3: Row 7, Column 3
+		{192, 384, 64, 64}, // Frame 4: Row 7, Column 4
+		{256, 384, 64, 64}, // Frame 5: Row 7, Column 5
+		{320, 384, 64, 64}, // Frame 6: Row 7, Column 6
+		{384, 384, 64, 64}, // Frame 7: Row 7, Column 7
+		{448, 384, 64, 64}	// Frame 8: Row 7, Column 8
+	};
+	
+	InitGameObjectAnimation(&player->base, sheilding, 6, 0.08f);
 }
 void PlayerUpdateShielding(GameObject *object, float deltaTime)
 {
@@ -655,13 +641,22 @@ void PlayerEnterDie(GameObject *object, float deltaTime)
 {
 	// TODO : Not Currently Implemented
 	(void)deltaTime;
+	Player *player = (Player *)object;
 	printf("\n%s -> ENTER -> Die\n", object->name);
 
 	object->timer = 0.0f;
+	object->lives --;
 
-	// Complete the remainder of the method
-	
-	// enter dead animation **************************************************************
+	Rectangle dead[6] = {
+		{0, 1280, 64, 64},	 // Frame 1: Row 21, Column 1
+		{64, 1280, 64, 64},	 // Frame 1: Row 21, Column 2
+		{128, 1280, 64, 64}, // Frame 1: Row 21, Column 3
+		{192, 1280, 64, 64}, // Frame 1: Row 21, Column 4
+		{256, 1280, 64, 64}, // Frame 1: Row 21, Column 5
+		{320, 1280, 64, 64}	 // Frame 1: Row 21, Column 6
+	};
+
+	InitGameObjectAnimation(&player->base, dead, 6, 0.2f);
 }
 
 void PlayerUpdateDie(GameObject *object, float deltaTime)
@@ -674,7 +669,15 @@ void PlayerUpdateDie(GameObject *object, float deltaTime)
 		ChangeState(object, STATE_RESPAWN, deltaTime);
 	}
 	// Complete the remainder of the method
-	UpdateAnimation(&object->animation, deltaTime);
+	if(object->timer < 1.2f)
+	{
+		UpdateAnimation(&object->animation, deltaTime);
+	}
+	else
+	{
+		object->collider.p.x = 1000.0f;
+		object->collider.p.y = 1000.0f;
+	}
 }
 
 void PlayerExitDie(GameObject *object, float deltaTime)
@@ -690,6 +693,8 @@ void PlayerEnterRespawn(GameObject *object, float deltaTime)
 	(void)deltaTime;
 	Player *player = (Player *)object;
 	object->position = (Vector2){GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
+	object->collider.p.x = object->position.x;
+	object->collider.p.y = object->position.y;
 	object->health = 100;
 	player->mana = 100.0f;
 	player->stamina = 100.0f;

@@ -160,6 +160,13 @@ void InitGame(GameData *data)
 
 void UpdateGame(GameData *data, float deltaTime)
 {
+	if(data->state == GAMEOVER)
+	{
+		if(MediatorUpdateGameOver())
+		{
+			InitGame(data);
+		}
+	}
 	if(data->state == MENU)
 	{
 		int input = 1;
@@ -208,6 +215,10 @@ void UpdateGame(GameData *data, float deltaTime)
 	}
 	if(data->state == GAME)
 	{
+		if(data->player->base.lives == 0 || data->npc->base.lives == 0)
+		{
+			data->state = GAMEOVER;
+		}
 		// Poll input from the player and execute the corresponding command
 		MediatorUpdatePlayer(data->playerMediator, deltaTime); // Execute the command via the mediator
 
@@ -353,6 +364,18 @@ void DrawMenuScreen(const GameData *data)
 	DrawTexture(data->buttons->exitButton->texture, 200,500,data->buttons->exitButton->color);
 }
 
+void DrawGameOver(const GameData *data)
+{
+	if(data->player->base.lives == 0)
+	{
+		DrawText("You Lost", SCREEN_WIDTH / 2 - MeasureText("You Lost", DEFAULT_FONT_SIZE) / 2, 250, DEFAULT_FONT_SIZE, BLACK);
+	}
+	if(data->npc->base.lives == 0)
+	{
+		DrawText("You Won", SCREEN_WIDTH / 2 - MeasureText("You Won", DEFAULT_FONT_SIZE) / 2, 250, DEFAULT_FONT_SIZE, BLACK);
+	}
+}
+
 /**
  * DrawGame : Draws all the craic on screen.
  *
@@ -376,6 +399,9 @@ void DrawGame(const GameData *data)
 	{
 		// Draw some basic UI text (game title and description)
 		DrawFPS(10, 20);
+		char livesMessage[20];
+		sprintf(livesMessage, "Lives: %d", data->player->base.lives);
+		DrawText( livesMessage, 10, 550, 50, RED);
 
 		//---------------------------------------------------------
 		// Drawing NPC and Position Data
@@ -406,6 +432,10 @@ void DrawGame(const GameData *data)
 
 		// Drawing Health Bar for the player
 		DrawGameObjectHealthBar(&data->player->base);
+	}
+	if(data->state == GAMEOVER)
+	{
+		DrawGameOver(data);
 	}
 }
 

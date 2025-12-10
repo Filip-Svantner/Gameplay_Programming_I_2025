@@ -49,4 +49,9 @@ void NPCEnterDead(GameObject *object, float deltaTime);
 void NPCUpdateDead(GameObject *object, float deltaTime);
 void NPCExitDead(GameObject *object, float deltaTime);
 
+void NPCEnterRespawn(GameObject *object, float deltaTime);
+void NPCUpdateRespawn(GameObject *object, float deltaTime);
+void NPCExitRespawn(GameObject *object, float deltaTime);
+
+
 #endif // NPC_H
