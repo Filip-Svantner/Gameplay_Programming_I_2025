@@ -28,6 +28,8 @@ int MediatorUpdateMenu(int whatButtonActive);
 
 bool MediatorUpdateGameOver();
 
+bool MediatorUpdateControls();
+
 // Mediator Cleanup
 void DeleteMediator(Mediator *mediator);
 

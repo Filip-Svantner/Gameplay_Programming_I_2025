@@ -68,9 +68,6 @@ void CloseGame(GameData *data);
 // Frees memory associated with GameData and its components (player, npc, mediator)
 void DeleteGameData(GameData *data);
 
-//new**********************************************************************************
-void DrawMenuScreen(const GameData *data);
-
 void selectButton(GameButtons *buttons, int whatActive);
 
 #endif // GAME_H

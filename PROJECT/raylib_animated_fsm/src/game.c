@@ -167,6 +167,13 @@ void UpdateGame(GameData *data, float deltaTime)
 			InitGame(data);
 		}
 	}
+	if(data->state == CONTROLS)
+	{
+		if(MediatorUpdateControls())
+		{
+			data->state = MENU;
+		}
+	}
 	if(data->state == MENU)
 	{
 		int input = 1;
@@ -390,7 +397,7 @@ static void DrawGameObjectPositionInfo(const GameObject *object)
 		20, DARKGRAY);
 }
 
-void DrawMenuScreen(const GameData *data)
+static void DrawMenuScreen(const GameData *data)
 {
 	DrawTexture(data->buttons->menuButton->texture, 100,100,data->buttons->menuButton->color);
 	DrawTexture(data->buttons->playButton->texture, 200,300,data->buttons->playButton->color);
@@ -398,18 +405,26 @@ void DrawMenuScreen(const GameData *data)
 	DrawTexture(data->buttons->exitButton->texture, 200,500,data->buttons->exitButton->color);
 }
 
-void DrawGameOver(const GameData *data)
+static void DrawGameOver(const GameData *data)
 {
 	if(data->player->base.lives == 0)
 	{
-		DrawText("You Lost", SCREEN_WIDTH / 2 - MeasureText("You Lost", 100) / 2, 250, DEFAULT_FONT_SIZE, BLACK);
+		DrawText("You Lost", 300, 250, 50, BLACK);
 	}
 	if(data->npc->base.lives == 0)
 	{
-		DrawText("You Won", SCREEN_WIDTH / 2 - MeasureText("You Won", 100) / 2, 250, DEFAULT_FONT_SIZE, BLACK);
+		DrawText("You Won", 300, 250, 50, BLACK);
 	}
-	DrawText("You Won", SCREEN_WIDTH / 2 - MeasureText("You Won", 100) / 2, 400, DEFAULT_FONT_SIZE, BLACK);
+	DrawText("Press R(PC) / X(PS) / A(XBOX) for restart", 60, 400  , 40, BLACK);
 }
+
+static void DrawControls()
+{
+	DrawText("Move: WASD / joystick / dpad \n Attack: SPACE / right trigger \n Shield: E / Circle / B \n Super Power: X / Square / X", 100, 100, 40, BLACK);
+	DrawText("Press A(PC) / left dpad(PS/XBOX) for menu", 30, 400  , 30, GRAY);
+}
+
+
 
 /**
  * DrawGame : Draws all the craic on screen.
@@ -428,6 +443,11 @@ void DrawGame(const GameData *data)
 	if(data->state == MENU)
 	{
 		DrawMenuScreen(data);
+	}
+
+	if(data->state == CONTROLS)
+	{
+		DrawControls();
 	}
 
 	if(data->state == GAME)

@@ -211,6 +211,17 @@ bool MediatorUpdateGameOver()
 	return 0;
 }
 
+bool MediatorUpdateControls()
+{
+	Command command = PollInput();
+
+	if(IsCommandActive(command, MOVE_LEFT))
+	{
+		return 1;
+	}
+	return 0;
+}
+
 /**
  * DeleteMediator - Frees a mediator from memory.
  *
