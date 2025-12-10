@@ -178,6 +178,44 @@ void MediatorUpdateNPC(Mediator *mediator, float deltaTime)
 	}
 }
 
+int MediatorUpdateMenu(int whatButtonActive)
+{
+	Command command = PollInput();
+	
+	if(IsCommandActive(command,MOVE_RIGHT))
+	{
+		return 0;
+	}
+
+	if(whatButtonActive == 1)
+	{
+		if(IsCommandActive(command, MOVE_DOWN))
+		{
+			return 2;
+		}
+	}
+	else if(whatButtonActive == 2)
+	{
+		if(IsCommandActive(command, MOVE_UP))
+		{
+			return 1;
+		}
+		if(IsCommandActive(command, MOVE_DOWN))
+		{
+			return 3;
+		}
+	}
+	else if(whatButtonActive == 3)
+	{
+		if(IsCommandActive(command, MOVE_UP))
+		{
+			return 2;
+		}
+	}
+
+	return whatButtonActive;
+}
+
 /**
  * DeleteMediator - Frees a mediator from memory.
  *

@@ -19,7 +19,9 @@
 void InitGame(GameData *data)
 {
 	// printf("Game Initialised!\n");
+	data->state = MENU;
 
+	//----GAME DATA-----
 	// Initialize the player and NPC with their respective names
 	// Setup position
 	Vector2 playerPosition = (Vector2){GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
@@ -34,6 +36,7 @@ void InitGame(GameData *data)
 	data->playerMediator = CreateMediator((GameObject *)data->player);
 	data->npcMediator = CreateMediator((GameObject *)data->npc);
 
+	//-----IMAGES-----
 	// Background Grass... looks better than a plain background
 	// https://github.com/raysan5/raylib/blob/master/examples/textures/textures_image_generation.c
 	Image grass = GenImagePerlinNoise(SCREEN_WIDTH, SCREEN_HEIGHT, 80, 80, 6.0f);
@@ -112,6 +115,34 @@ void InitGame(GameData *data)
 	UnloadImage(dirt);	// Free up as Texture was produced
 	UnloadImage(rocks); // Free up as Texture was produced
 
+	GameButtons *initButtons = (GameButtons *)malloc(sizeof(GameButtons));
+	data->buttons = initButtons;
+
+	Button *initMenuButton = (Button *)malloc(sizeof(Button));
+	data->buttons->menuButton = initMenuButton;
+	Button *initPlayButton = (Button *)malloc(sizeof(Button));
+	data->buttons->playButton = initPlayButton;
+	Button *initControlsButton = (Button *)malloc(sizeof(Button));
+	data->buttons->controlsButton = initControlsButton;
+	Button *initExitButton = (Button *)malloc(sizeof(Button));
+	data->buttons->exitButton = initExitButton;
+
+	data->buttons->menuButton->texture = LoadTexture("assets/menu_button.png");
+    data->buttons->playButton->texture = LoadTexture("assets/play_button.png");
+    data->buttons->controlsButton->texture = LoadTexture("assets/controls_button.png");
+    data->buttons->exitButton->texture = LoadTexture("assets/exit_button.png");
+
+	data->buttons->playButton->isSelected = true;
+	data->buttons->playButton->color = GRAY;
+
+	data->buttons->menuButton->color = WHITE;
+	data->buttons->controlsButton->color = WHITE;
+	data->buttons->exitButton->color = WHITE;
+
+	data->endGame = false;
+
+	data->buttonTimer = 0.0f;
+	
 	// Initialise Input Managers
 	InitInputManager();
 	InitAIManager();
@@ -129,54 +160,122 @@ void InitGame(GameData *data)
 
 void UpdateGame(GameData *data, float deltaTime)
 {
-	// Poll input from the player and execute the corresponding command
-	MediatorUpdatePlayer(data->playerMediator, deltaTime); // Execute the command via the mediator
-
-	// Update the player's state based on its current configuration
-	UpdateState(&data->player->base, deltaTime);
-
-	// Update NPC
-	MediatorUpdateNPC(data->npcMediator, deltaTime);
-
-	// Update the NPC's state after handling the event
-	UpdateState(&data->npc->base, deltaTime);
-
-	// Check for Collisions
-	bool isColliding = CheckCollision(&data->player->base, &data->npc->base);
-
-	// ENTER Collision
-	if (isColliding && !data->player->base.isColliding)
+	if(data->state == MENU)
 	{
-		// Notify FSMs
-		HandleEvent(&data->player->base, EVENT_COLLISION_START, deltaTime);
-		HandleEvent(&data->npc->base, EVENT_COLLISION_START, deltaTime);
+		int input = 1;
+		data->buttonTimer+=deltaTime;
 
-		// Respond to Collision
-		CollisionEntry(&data->player->base, &data->npc->base);
-		HandleCollision(&data->player->base, &data->npc->base);
+		if(data->buttonTimer > 0.1f)
+		{
+			if(data->buttons->playButton->isSelected)
+			{
+				input = MediatorUpdateMenu(1);
+				if(input == 0)
+				{
+					data->state = GAME;
+				}
+				else
+				{
+					selectButton(data->buttons, input);
+				}
+			}
+			else if(data->buttons->controlsButton->isSelected)
+			{
+				input = MediatorUpdateMenu(2);
+				if(input == 0)
+				{
+					data->state = CONTROLS;
+				}
+				else
+				{
+					selectButton(data->buttons, input);
+				}
+			}
+			else
+			{
+				input = MediatorUpdateMenu(3);
+				if(input == 0)
+				{
+					data->endGame = true;
+				}
+				else
+				{
+					selectButton(data->buttons, input);
+				}
+			}
+			data->buttonTimer = 0.0f;
+		}
 	}
-	else if (!isColliding && data->player->base.isColliding)
+	if(data->state == GAME)
 	{
-		// EXIT Collision
-		HandleEvent(&data->player->base, EVENT_COLLISION_END, deltaTime);
-		HandleEvent(&data->npc->base, EVENT_COLLISION_END, deltaTime);
+		// Poll input from the player and execute the corresponding command
+		MediatorUpdatePlayer(data->playerMediator, deltaTime); // Execute the command via the mediator
 
-		CollisionExit(&data->player->base, &data->npc->base);
-	}
-	else if (isColliding && data->player->base.isColliding)
-	{
-		// ONGOING Collision
-		HandleCollision(&data->player->base, &data->npc->base);
-	}
+		// Update the player's state based on its current configuration
+		UpdateState(&data->player->base, deltaTime);
 
-	// Update isColliding for GameObjects
-	data->player->base.isColliding = isColliding;
-	data->npc->base.isColliding = isColliding;
+		// Update NPC
+		MediatorUpdateNPC(data->npcMediator, deltaTime);
+
+		// If the NPC is attacking, update its target to the player's position
+		// This makes the NPC chase the player
+		if (data->npc->base.currentState == STATE_ATTACKING)
+		{
+			data->npc->target = data->player->base.position;
+			data->npc->aggression += NPC_AGGRESSION_BUILD * deltaTime; // Increase aggression over time while attacking
+			if (data->npc->aggression > NPC_MAX_AGGRESSION)
+				data->npc->aggression = NPC_MAX_AGGRESSION;
+		}
+		else
+		{
+			// Reduce agression when not attacking
+			data->npc->aggression -= NPC_AGGRESSION_DECAY * deltaTime;
+			if (data->npc->aggression < NPC_MIN_AGGRESSION)
+				data->npc->aggression = NPC_MIN_AGGRESSION; // Minimum agression
+		}
+
+		// Update the NPC's state after handling the event
+		UpdateState(&data->npc->base, deltaTime);
+
+		// Check for Collisions
+		bool isColliding = CheckCollision(&data->player->base, &data->npc->base);
+
+		// ENTER Collision
+		if (isColliding && !data->player->base.isColliding)
+		{
+			// Notify FSMs
+			HandleEvent(&data->player->base, EVENT_COLLISION_START, deltaTime);
+			HandleEvent(&data->npc->base, EVENT_COLLISION_START, deltaTime);
+
+			// Respond to Collision
+			CollisionEntry(&data->player->base, &data->npc->base);
+			HandleCollision(&data->player->base, &data->npc->base);
+		}
+		else if (!isColliding && data->player->base.isColliding)
+		{
+			// EXIT Collision
+			HandleEvent(&data->player->base, EVENT_COLLISION_END, deltaTime);
+			HandleEvent(&data->npc->base, EVENT_COLLISION_END, deltaTime);
+
+			CollisionExit(&data->player->base, &data->npc->base);
+		}
+		else if (isColliding && data->player->base.isColliding)
+		{
+			// ONGOING Collision
+			HandleCollision(&data->player->base, &data->npc->base);
+		}
+
+		// Update isColliding for GameObjects
+		data->player->base.isColliding = isColliding;
+		data->npc->base.isColliding = isColliding;
+
+	}
 }
 
 // Draw GameObject HealthBar
 static void DrawGameObjectHealthBar(const GameObject *object)
 {
+	
 	// Healthbar Dimensions
 	const int healthBarWidth = 100;
 	const int healthBarHeight = 10;
@@ -246,6 +345,14 @@ static void DrawGameObjectPositionInfo(const GameObject *object)
 		20, DARKGRAY);
 }
 
+void DrawMenuScreen(const GameData *data)
+{
+	DrawTexture(data->buttons->menuButton->texture, 100,100,data->buttons->menuButton->color);
+	DrawTexture(data->buttons->playButton->texture, 200,300,data->buttons->playButton->color);
+	DrawTexture(data->buttons->controlsButton->texture, 200,400,data->buttons->controlsButton->color);
+	DrawTexture(data->buttons->exitButton->texture, 200,500,data->buttons->exitButton->color);
+}
+
 /**
  * DrawGame : Draws all the craic on screen.
  *
@@ -260,38 +367,46 @@ void DrawGame(const GameData *data)
 	// Draw Background
 	DrawTexture(data->background, 0, 0, WHITE);
 
-	// Draw some basic UI text (game title and description)
-	DrawFPS(10, 20);
+	if(data->state == MENU)
+	{
+		DrawMenuScreen(data);
+	}
 
-	//---------------------------------------------------------
-	// Drawing NPC and Position Data
-	// NPC Circle
-	//---------------------------------------------------------
-	DrawGameObjectColliderCircle(&data->npc->base);
+	if(data->state == GAME)
+	{
+		// Draw some basic UI text (game title and description)
+		DrawFPS(10, 20);
 
-	// Render the npc's animation at their current position
-	DrawAnimation(&data->npc->base.animation, data->npc->base.position, RAYWHITE);
+		//---------------------------------------------------------
+		// Drawing NPC and Position Data
+		// NPC Circle
+		//---------------------------------------------------------
+		DrawGameObjectColliderCircle(&data->npc->base);
 
-	// Player Position Information
-	DrawGameObjectPositionInfo(&data->npc->base);
+		// Render the npc's animation at their current position
+		DrawAnimation(&data->npc->base.animation, data->npc->base.position, RAYWHITE);
 
-	// Drawing Health Bar for the npc
-	DrawGameObjectHealthBar(&data->npc->base);
+		// Player Position Information
+		DrawGameObjectPositionInfo(&data->npc->base);
 
-	//---------------------------------------------------------
-	// Drawing Player and Position Data
-	// Player Circle
-	//---------------------------------------------------------
-	DrawGameObjectColliderCircle(&data->player->base);
+		// Drawing Health Bar for the npc
+		DrawGameObjectHealthBar(&data->npc->base);
 
-	// Render the player's animation at their current position
-	DrawAnimation(&data->player->base.animation, data->player->base.position, WHITE);
+		//---------------------------------------------------------
+		// Drawing Player and Position Data
+		// Player Circle
+		//---------------------------------------------------------
+		DrawGameObjectColliderCircle(&data->player->base);
 
-	// Player Position Information
-	DrawGameObjectPositionInfo(&data->player->base);
+		// Render the player's animation at their current position
+		DrawAnimation(&data->player->base.animation, data->player->base.position, WHITE);
 
-	// Drawing Health Bar for the player
-	DrawGameObjectHealthBar(&data->player->base);
+		// Player Position Information
+		DrawGameObjectPositionInfo(&data->player->base);
+
+		// Drawing Health Bar for the player
+		DrawGameObjectHealthBar(&data->player->base);
+	}
 }
 
 /**
@@ -311,6 +426,15 @@ void CloseGame(GameData *data)
 	if (data != NULL)
 	{
 		DeleteGameData(data);
+	}
+}
+
+void DeleteButtons(GameButtons *buttons)
+{
+	if(buttons)
+	{
+		free(buttons);
+		buttons = NULL;
 	}
 }
 
@@ -349,10 +473,55 @@ void DeleteGameData(GameData *data)
 			DeleteMediator(data->npcMediator);
 		}
 
+		if(data->buttons != NULL)
+		{
+			DeleteButtons(data->buttons);
+		}
+
 		// Free the background
 		UnloadTexture(data->background);
+		UnloadTexture(data->buttons->controlsButton->texture);
+		UnloadTexture(data->buttons->playButton->texture);
+		UnloadTexture(data->buttons->menuButton->texture);
+		UnloadTexture(data->buttons->exitButton->texture);
 	}
 
 	// Free GameData
 	free(data); // Free game data memory
+}
+
+void selectButton(GameButtons *buttons, int whatActive)
+{
+
+	if(whatActive == 1)
+	{
+		buttons->playButton->isSelected = true;
+		buttons->controlsButton->isSelected = false;
+		buttons->exitButton->isSelected = false;
+
+		buttons->playButton->color = GRAY;
+		buttons->controlsButton->color = WHITE;
+		buttons->exitButton->color = WHITE;
+	}
+	else if(whatActive == 2)
+	{
+		buttons->playButton->isSelected = false;
+		buttons->controlsButton->isSelected = true;
+		buttons->exitButton->isSelected = false;
+
+		buttons->playButton->color = WHITE;
+		buttons->controlsButton->color = GRAY;
+		buttons->exitButton->color = WHITE;
+	}
+	else
+	{
+		buttons->playButton->isSelected = false;
+		buttons->controlsButton->isSelected = false;
+		buttons->exitButton->isSelected = true;
+
+		buttons->playButton->color = WHITE;
+		buttons->controlsButton->color = WHITE;
+		buttons->exitButton->color = GRAY;
+	}
+	
 }

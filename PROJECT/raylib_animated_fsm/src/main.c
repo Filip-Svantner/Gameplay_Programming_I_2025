@@ -35,7 +35,7 @@ int main(void)
 	SetTargetFPS(TARGET_FPS);
 
 	// Raylib while loop
-	while (!WindowShouldClose()) // Detect window close button or ESC key
+	while (!WindowShouldClose() && !data->endGame) // Detect window close button or ESC key
 	{
 		// Call GameLoop
 		GameLoop(data);

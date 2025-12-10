@@ -6,6 +6,33 @@
 #include "./gameobjects/npc.h"
 #include "./utils/collision.h"
 
+typedef enum
+{
+    MENU,
+    CONTROLS,
+    GAME,
+    GAMEOVER
+
+}GameState;
+
+typedef struct 
+{
+    Texture texture;
+    bool isSelected;
+    Color color;
+}Button;
+
+typedef struct 
+{
+    Button *menuButton;
+    Button *playButton;
+    Button *controlsButton;
+    Button *exitButton;
+}GameButtons;
+
+
+
+
 // Define the GameData struct to store the main game components (player, npc, and mediator)
 typedef struct
 {
@@ -17,6 +44,12 @@ typedef struct
 
     // Simple Background image (Perlin noise)
     Texture background;
+
+    //new*******************************************************************
+    GameState state;
+    GameButtons *buttons;
+    float buttonTimer;
+    bool endGame;
 
 } GameData;
 
@@ -34,5 +67,10 @@ void CloseGame(GameData *data);
 
 // Frees memory associated with GameData and its components (player, npc, mediator)
 void DeleteGameData(GameData *data);
+
+//new**********************************************************************************
+void DrawMenuScreen(const GameData *data);
+
+void selectButton(GameButtons *buttons, int whatActive);
 
 #endif // GAME_H

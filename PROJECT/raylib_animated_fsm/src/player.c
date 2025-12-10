@@ -34,7 +34,8 @@ Player *InitPlayer(const char *name, Vector2 position, int radius)
 				   DARKGREEN,  // Player Color
 				   collider,   // cute_c2 Circle Collider
 				   texture,	   // Player spritesheet
-				   100		   // Initial Health
+				   100,		   // Initial Health
+				   3
 	);
 
 	// Player Specific Data

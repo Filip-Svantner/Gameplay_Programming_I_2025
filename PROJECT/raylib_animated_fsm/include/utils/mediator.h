@@ -24,6 +24,8 @@ void MediatorUpdatePlayer(Mediator *mediator, float deltaTime);
 // PollsAI
 void MediatorUpdateNPC(Mediator *mediator, float deltaTime);
 
+int MediatorUpdateMenu(int whatButtonActive);
+
 // Mediator Cleanup
 void DeleteMediator(Mediator *mediator);
 

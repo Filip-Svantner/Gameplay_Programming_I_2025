@@ -13,7 +13,8 @@
 typedef struct
 {
 	GameObject base; // The base game object (inherits from GameObject)
-	int aggression;	 // The aggression level of the NPC (could affect behavior)
+	float aggression;	 // The aggression level of the NPC (could affect behavior)
+	Vector2 target;
 } NPC;
 
 // Initialize a new NPC with a given name (returns a pointer to the NPC)

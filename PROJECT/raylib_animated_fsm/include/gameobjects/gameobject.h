@@ -55,6 +55,8 @@ typedef struct GameObject
 	int health;	 // The health of the game object
 	float timer; // Can be used during updates
 
+	int lives;
+
 } GameObject;
 
 // Initialize a new game object with the given name and default values
@@ -65,7 +67,8 @@ void InitGameObject(GameObject *object,
 					Color color,
 					c2Circle collider,
 					Texture2D keyframes,
-					int health);
+					int health,
+					int lives);
 
 // Helper function to initialize animation
 void InitGameObjectAnimation(GameObject *object, Rectangle *frames, int frameCount, float speed);

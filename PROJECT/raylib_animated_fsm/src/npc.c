@@ -1,4 +1,5 @@
 #include "./gameobjects/npc.h"
+#include "./utils/constants.h"
 
 /**
  * InitNPC - Sets up a brand-new NPC and gets them ready for mischief.
@@ -41,11 +42,12 @@ NPC *InitNPC(const char *name, Vector2 position, int radius)
 				   DARKGREEN,  // Player Color
 				   collider,   // cute_c2 Circle Collider
 				   npcTexture,
-				   100 // Initial Health
+				   100, // Initial Health
+				   3
 	);
 
 	// Set the default aggression level for the NPC
-	npc->aggression = 50;
+	npc->aggression = NPC_MIN_AGGRESSION; // Mild agression
 
 	// Initialize the NPC's finite state machine (FSM) with state configurations
 	InitNPCFSM(&npc->base);
@@ -214,35 +216,137 @@ void NPCExitIdle(GameObject *object, float deltaTime)
 	// Cleanup code for leaving Idle state, if any.
 }
 
+/**
+ * InitAttackAnimation - Picks the correct attack arc for the direction.
+ *
+ * Uses the big 192x192 attack frames further down the sprite sheet.
+ */
+static void InitAttackAnimation(GameObject *object)
+{
+	// ATTACK UP (Row 48)
+	static Rectangle sword_attack_UP[6] = {
+		{0, 2952, 192, 192},   // Frame 1: Row 44, Column 1
+		{192, 2952, 192, 192}, // Frame 2: Row 44, Column 2
+		{384, 2952, 192, 192}, // Frame 3: Row 44, Column 3
+		{576, 2952, 192, 192}, // Frame 4: Row 44, Column 4
+		{768, 2952, 192, 192}, // Frame 5: Row 44, Column 5
+		{960, 2952, 192, 192}  // Frame 6: Row 44, Column 6
+	};
+	// ATTACK LEFT (Row 51)
+	static Rectangle sword_attack_LEFT[6] = {
+		{0, 3144, 192, 192},   // Frame 1: Row 51, Column 1
+		{192, 3144, 192, 192}, // Frame 2: Row 51, Column 2
+		{384, 3144, 192, 192}, // Frame 3: Row 51, Column 3
+		{576, 3144, 192, 192}, // Frame 4: Row 51, Column 4
+		{768, 3144, 192, 192}, // Frame 5: Row 51, Column 5
+		{960, 3144, 192, 192}  // Frame 6: Row 51, Column 6
+	};
+	// ATTACK DOWN (Row 54)
+	static Rectangle sword_attack_DOWN[6] = {
+		{0, 3336, 192, 192},   // Frame 1: Row 54, Column 1
+		{192, 3336, 192, 192}, // Frame 2: Row 54, Column 2
+		{384, 3336, 192, 192}, // Frame 3: Row 54, Column 3
+		{576, 3336, 192, 192}, // Frame 4: Row 54, Column 4
+		{768, 3336, 192, 192}, // Frame 5: Row 54, Column 5
+		{960, 3336, 192, 192}  // Frame 6: Row 54, Column 6
+	};
+	// ATTACK RIGHT (Row 57)
+	static Rectangle sword_attack_RIGHT[6] = {
+		{0, 3528, 192, 192},   // Frame 1: Row 57, Column 1
+		{192, 3528, 192, 192}, // Frame 2: Row 57, Column 2
+		{384, 3528, 192, 192}, // Frame 3: Row 57, Column 3
+		{576, 3528, 192, 192}, // Frame 4: Row 57, Column 4
+		{768, 3528, 192, 192}, // Frame 5: Row 57, Column 5
+		{960, 3528, 192, 192}  // Frame 6: Row 57, Column 6
+	};
+	switch (object->currentDirection)
+	{
+	case UP:
+		InitGameObjectAnimation(object, sword_attack_UP, 6, 0.035f);
+		break;
+	case DOWN:
+		InitGameObjectAnimation(object, sword_attack_DOWN, 6, 0.035f);
+		break;
+	case LEFT:
+		InitGameObjectAnimation(object, sword_attack_LEFT, 6, 0.035f);
+		break;
+	case RIGHT:
+		InitGameObjectAnimation(object, sword_attack_RIGHT, 6, 0.035f);
+		break;
+	}
+}
+
 // Enter function for Attacking state, executed once upon entering Attacking
 void NPCEnterAttacking(GameObject *object, float deltaTime)
 {
 	(void)deltaTime;
 	NPC *npc = (NPC *)object;
 	printf("%s -> ENTER -> Attacking\n", object->name);
-	printf("Aggression: %d\n\n", npc->aggression);
-	// Initialization code for entering Attacking state, such as setting up attack animations.
-	Rectangle attacking[6] = {
-		{0, 3328, 192, 192},   // Frame 1: Row 53, Column 1
-		{192, 3328, 192, 192}, // Frame 2: Row 53, Column 2
-		{384, 3328, 192, 192}, // Frame 3: Row 53, Column 3
-		{576, 3520, 192, 192}, // Frame 4: Row 53, Column 4
-		{768, 3520, 192, 192}, // Frame 5: Row 53, Column 5
-		{960, 3520, 192, 192}  // Frame 6: Row 53, Column 6
-	};
+	printf("Aggression: %f\n\n", npc->aggression);
 
-	// Initialize the idle animation frames and play it
-	InitGameObjectAnimation(&npc->base, attacking, 6, 0.055f);
+	// Initialization code for entering Attacking state, such as setting up attack animations.
+	InitAttackAnimation(object);
 }
 
 // Update function for Attacking state, called repeatedly during game ticks while in Attacking
 void NPCUpdateAttacking(GameObject *object, float deltaTime)
 {
-	(void)deltaTime;
 	NPC *npc = (NPC *)object;
 	printf("%s -> UPDATE -> Attacking\n", object->name);
-	printf("Aggression: %d\n\n", npc->aggression);
-	// During game loop and game ticks, execute Attacking state behavior here, such as dealing damage.
+	printf("Aggression: %f\n\n", npc->aggression);
+	
+	// Direction from NPC to target (player)
+	Vector2 direction;
+	direction.x = npc->target.x - npc->base.position.x;
+	direction.y = npc->target.y - npc->base.position.y;
+
+	// Normalise direction using Raylib function (0,0) to (1,1)
+	direction = Vector2Normalize(direction);
+
+	// Calculate distance to target using Raylib function ( 0 to distance n)
+	float distance = Vector2Distance(npc->base.position, npc->target);
+
+	// Store previous direction (see utils/utils.h)
+	object->previousDirection = object->currentDirection;
+
+	// Update current direction based on movement direction
+	// (see utils/utils.h)
+	object->currentDirection = DirectionAxis(direction);
+
+	// If Direction changed change attack animation
+	if (object->currentDirection != object->previousDirection)
+	{
+		InitAttackAnimation(object);
+		object->previousDirection = object->currentDirection;
+	}
+
+	// Move towards target
+	// Use aggression to affect movement speed example below
+	// Aggression factor scales between min and max based on npc->aggression (min to max)
+	float aggression_factor = NPC_MIN_AGGRESSION + (NPC_MAX_AGGRESSION - NPC_MIN_AGGRESSION) * npc->aggression;
+
+	// Make sure aggression factor is clamped between min and max agression
+	aggression_factor = Clamp(aggression_factor, NPC_MIN_AGGRESSION, NPC_MAX_AGGRESSION);
+	float movement = DEFAULT_MOVEMENT_SPEED * aggression_factor * deltaTime;
+
+	// Dont go past target
+	if (movement > distance)
+		movement = distance;
+
+	// Scale direction by movement size
+	Vector2 delta = (Vector2){direction.x * movement, direction.y * movement};
+
+	// Apply movement
+	npc->base.position = Vector2Add(npc->base.position, delta);
+
+	// Keep NPC on screen
+	ClampGameObjectOnScreen(&npc->base);
+
+	// Update collider position
+	npc->base.collider.p.x = npc->base.position.x;
+	npc->base.collider.p.y = npc->base.position.y;
+
+	// Update attack animation
 	UpdateAnimation(&object->animation, deltaTime);
 }
 
@@ -252,7 +356,7 @@ void NPCExitAttacking(GameObject *object, float deltaTime)
 	(void)deltaTime;
 	NPC *npc = (NPC *)object;
 	printf("%s <- EXIT <- Attacking\n", object->name);
-	printf("Aggression: %d\n\n", npc->aggression);
+	printf("Aggression: %f\n\n", npc->aggression);
 	// Cleanup code for leaving Attacking state, such as resetting attack cooldown.
 	UpdateAnimation(&object->animation, deltaTime);
 }
@@ -263,7 +367,7 @@ void NPCEnterShielding(GameObject *object, float deltaTime)
 	(void)deltaTime;
 	NPC *npc = (NPC *)object;
 	printf("%s -> ENTER -> Shielding\n", object->name);
-	printf("Aggression: %d\n\n", npc->aggression);
+	printf("Aggression: %f\n\n", npc->aggression);
 	// Initialization code for entering Shielding state, such as enabling shield effects.
 
 	Rectangle sheilding[8] = {
@@ -287,7 +391,7 @@ void NPCUpdateShielding(GameObject *object, float deltaTime)
 	(void)deltaTime;
 	NPC *npc = (NPC *)object;
 	printf("%s -> UPDATE -> Shielding\n", object->name);
-	printf("Aggression: %d\n\n", npc->aggression);
+	printf("Aggression: %f\n\n", npc->aggression);
 	// During game loop and game ticks, execute Shielding state behavior here, such as reducing incoming damage.
 	UpdateAnimation(&object->animation, deltaTime);
 }
@@ -298,7 +402,7 @@ void NPCExitShielding(GameObject *object, float deltaTime)
 	(void)deltaTime;
 	NPC *npc = (NPC *)object;
 	printf("%s -> EXIT -> Shielding\n", object->name);
-	printf("Aggression: %d\n\n", npc->aggression);
+	printf("Aggression: %f\n\n", npc->aggression);
 	// Cleanup code for leaving Shielding state, if any.
 }
 
@@ -308,7 +412,7 @@ void NPCEnterDead(GameObject *object, float deltaTime)
 	(void)deltaTime;
 	NPC *npc = (NPC *)object;
 	printf("%s -> ENTER -> Dead\n", object->name);
-	printf("Aggression: %d\n\n", npc->aggression);
+	printf("Aggression: %f\n\n", npc->aggression);
 	// Initialization code for entering Dead state, such as playing death animation or disabling further actions.
 	Rectangle dead[6] = {
 		{0, 1280, 64, 64},	 // Frame 1: Row 21, Column 1
@@ -327,7 +431,7 @@ void NPCUpdateDead(GameObject *object, float deltaTime)
 {
 	NPC *npc = (NPC *)object;
 	printf("%s -> UPDATE -> Dead\n", object->name);
-	printf("Aggression: %d\n\n", npc->aggression);
+	printf("Aggression: %f\n\n", npc->aggression);
 	// During game loop and game ticks, execute Dead state behavior here, such as preventing any actions.
 	// This could be a place to check if the NPC should be removed or respawned.
 	UpdateAnimation(&object->animation, deltaTime);
@@ -339,6 +443,6 @@ void NPCExitDead(GameObject *object, float deltaTime)
 	(void)deltaTime;
 	NPC *npc = (NPC *)object;
 	printf("%s -> EXIT -> Dead\n", object->name);
-	printf("Aggression: %d\n\n", npc->aggression);
+	printf("Aggression: %f\n\n", npc->aggression);
 	// Cleanup code for leaving Dead state, such as removing NPC from the active world, playing respawn animations, etc.
 }
