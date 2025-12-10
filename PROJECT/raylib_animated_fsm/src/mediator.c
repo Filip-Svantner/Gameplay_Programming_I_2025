@@ -59,6 +59,10 @@ void MediatorHandleCommand(Mediator *mediator, Command command, float deltaTime)
 
 	GameObject *object = mediator->object;
 
+	if(IsCommandActive(command, SUPER_POWER))
+		HandleEvent(object, EVENT_SUPER_POWER, deltaTime);
+		
+
 	// Movement (multiple keys)
 	Vector2 axis = (Vector2){0.0f, 0.0f};
 

@@ -27,19 +27,7 @@ typedef enum
 	EVENT_COLLISION_START, // Represents the start of a collision (e.g., player colliding with a wall, enemy, or object).
 	EVENT_COLLISION_END,   // Represents the end of a collision (e.g., player moving away from a colliding object or enemy).
 
-	// Player Actions:
-	// EVENT_JUMP,   // Represents the player character jumping (e.g., player jumps to avoid obstacles or reach higher platforms).
-	// EVENT_CROUCH, // Represents the player character crouching (e.g., ducking to avoid attacks or entering narrow areas).
-	// EVENT_PICKUP, // Represents the player picking up an item (e.g., collecting weapons, coins, health potions, etc.).
-
-	// Game State Events:
-	// EVENT_WIN,   // Represents the player winning the game or level (e.g., completing a mission, reaching the end goal).
-	// EVENT_LOSE,  // Represents the player losing the game or level (e.g., failing objectives or losing all lives).
-	// EVENT_PAUSE, // Represents the player pausing the game (e.g., opening the pause menu).
-
-	// Miscellaneous Events:
-	// EVENT_FALL,     // Represents the player character falling (e.g., falling off platforms or dropping into a pit).
-	// EVENT_WIN_BOSS, // Represents the player defeating a boss (e.g., completing a major challenge in the game).
+	EVENT_SUPER_POWER,
 
 	EVENT_COUNT // Represents the total number of events (for counting purposes, typically used for array size).
 } Event;		// Define 'Event' as the type of the enum

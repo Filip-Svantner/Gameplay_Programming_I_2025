@@ -3,6 +3,8 @@
 
 #include "./utils/collision.h"
 
+static bool wasPlayerSuperPowered = false;
+
 /**
  * CheckCollision : Checks if two game objects have bumped into each other.
  *
@@ -18,6 +20,10 @@
 
 bool CheckCollision(GameObject *lhs, GameObject *rhs)
 {
+	if(lhs->currentState == STATE_SUPER_POWER)
+	{
+		wasPlayerSuperPowered = true;
+	}
 	return c2CircletoCircle(lhs->collider, rhs->collider);
 }
 
@@ -72,15 +78,31 @@ void CollisionEntry(GameObject *lhs, GameObject *rhs)
 	// Simple Damage System
 	if (lhs->currentState == STATE_ATTACKING)
 	{
-		rhs->health -= DAMAGE_DEFAULT; // Example: Reduce rhs's (NPC's) health on collision
-		printf("NPC Damage [ %d ] Health[ %d ]\n", DAMAGE_DEFAULT, rhs->health);		
+		if(rhs->currentState != STATE_SHIELD)
+		{
+			if(wasPlayerSuperPowered)
+			{
+				rhs->health -= DAMAGE_DEFAULT * 2;
+				printf("NPC Damage [ %d ] Health[ %d ]\n", DAMAGE_DEFAULT, rhs->health);
+			}
+			else
+			{
+				rhs->health -= DAMAGE_DEFAULT; // Example: Reduce rhs's (NPC's) health on collision
+				printf("NPC Damage [ %d ] Health[ %d ]\n", DAMAGE_DEFAULT, rhs->health);
+			}
+				
+		}	
 	}
 	else
 	{
 		if (rhs->currentState == STATE_ATTACKING)
 		{
-			lhs->health -= DAMAGE_DEFAULT; // Example: Reduce Players health on collision
-			printf("Player Damage [ %d ] Health[ %d ]\n", DAMAGE_DEFAULT, lhs->health);
+			if(lhs->currentState != STATE_SHIELD)
+			{
+				lhs->health -= DAMAGE_DEFAULT; // Example: Reduce Players health on collision
+				printf("Player Damage [ %d ] Health[ %d ]\n", DAMAGE_DEFAULT, lhs->health);
+			}
+			
 		}
 	}
 }

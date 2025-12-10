@@ -24,6 +24,7 @@ typedef enum
 	STATE_DEAD,		 // Represents the dead state (game over or defeated)
 	STATE_RESPAWN,	 // Represents the respawn state (respawns the player)
 	STATE_COLLISION, // Represents the state when a collision is detected (e.g., with an enemy or obstacle)
+	STATE_SUPER_POWER,
 	STATE_COUNT		 // Represents the total number of states (for counting purposes)
 } State;			 // Define 'State' as the type of the enum
 

@@ -323,6 +323,40 @@ static void DrawGameObjectHealthBar(const GameObject *object)
 	DrawRectangle(healthBarX + currentHealth, healthBarY, lostHealth, healthBarHeight, lostHealthColor);
 }
 
+static void DrawStaminaBar(const Player *player)
+{
+	
+	// Stamina Dimensions
+	const int staminaBarWidth = 100;
+	const int staminaBarHeight = 35;
+
+	// Center above GameObject
+	const int staminaBarX = 600;
+	const int staminaBarY = 550;
+
+	// Make sure stamina is between 0 and 100
+	int stamina = player->stamina;
+	if (stamina < 0)
+		stamina = 0;
+	if (stamina > 100)
+		stamina = 100;
+
+	// Bar width
+	float staminaPercentage = stamina / 100.0f;
+	int currentStamina = (int)(staminaBarWidth * staminaPercentage);
+	
+
+	// Colours
+	Color background = ColorAlpha(GRAY, 0.5f);
+	Color currentStaminaColor = ColorAlpha(BLUE, 0.5f);
+
+	// Background (gray)
+	DrawRectangle(staminaBarX, staminaBarY, staminaBarWidth, staminaBarHeight, background);
+
+	// Current health (green)
+	DrawRectangle(staminaBarX, staminaBarY, currentStamina, staminaBarHeight, currentStaminaColor);
+}
+
 // Draw the GameObject in this example a simple Circle which is a collider
 static void DrawGameObjectColliderCircle(const GameObject *object)
 {
@@ -368,12 +402,13 @@ void DrawGameOver(const GameData *data)
 {
 	if(data->player->base.lives == 0)
 	{
-		DrawText("You Lost", SCREEN_WIDTH / 2 - MeasureText("You Lost", DEFAULT_FONT_SIZE) / 2, 250, DEFAULT_FONT_SIZE, BLACK);
+		DrawText("You Lost", SCREEN_WIDTH / 2 - MeasureText("You Lost", 100) / 2, 250, DEFAULT_FONT_SIZE, BLACK);
 	}
 	if(data->npc->base.lives == 0)
 	{
-		DrawText("You Won", SCREEN_WIDTH / 2 - MeasureText("You Won", DEFAULT_FONT_SIZE) / 2, 250, DEFAULT_FONT_SIZE, BLACK);
+		DrawText("You Won", SCREEN_WIDTH / 2 - MeasureText("You Won", 100) / 2, 250, DEFAULT_FONT_SIZE, BLACK);
 	}
+	DrawText("You Won", SCREEN_WIDTH / 2 - MeasureText("You Won", 100) / 2, 400, DEFAULT_FONT_SIZE, BLACK);
 }
 
 /**
@@ -402,6 +437,7 @@ void DrawGame(const GameData *data)
 		char livesMessage[20];
 		sprintf(livesMessage, "Lives: %d", data->player->base.lives);
 		DrawText( livesMessage, 10, 550, 50, RED);
+		DrawStaminaBar(data->player);
 
 		//---------------------------------------------------------
 		// Drawing NPC and Position Data
@@ -425,7 +461,7 @@ void DrawGame(const GameData *data)
 		DrawGameObjectColliderCircle(&data->player->base);
 
 		// Render the player's animation at their current position
-		DrawAnimation(&data->player->base.animation, data->player->base.position, WHITE);
+		DrawAnimation(&data->player->base.animation, data->player->base.position, data->player->superPowerColor);
 
 		// Player Position Information
 		DrawGameObjectPositionInfo(&data->player->base);

@@ -14,7 +14,10 @@ typedef struct
 {
 	GameObject base; // The base game object (inherits from GameObject)
 	float stamina;	 // The player's stamina (could affect actions like running, attacking)
-	float mana;		 // The player's mana (could affect magic abilities or special moves)
+	float mana;
+	bool superPowerAvailable;
+	Color superPowerColor;
+
 } Player;
 
 // Initialise a new Player with a given name (returns a pointer to the Player)
@@ -58,5 +61,9 @@ void PlayerExitDie(GameObject *object, float deltaTime);   // Called when exitin
 void PlayerEnterRespawn(GameObject *object, float deltaTime);  // Called when entering the respawn state
 void PlayerUpdateRespawn(GameObject *object, float deltaTime); // Called to update the player's behavior while respawning
 void PlayerExitRespawn(GameObject *object, float deltaTime);   // Called when exiting the respawn
+
+void PlayerEnterSuperPower(GameObject *object, float deltaTime);
+void PlayerUpdateSuperPower(GameObject *object, float deltaTime);
+void PlayerExitSuperPower(GameObject *object, float deltaTime);
 
 #endif // PLAYER_H

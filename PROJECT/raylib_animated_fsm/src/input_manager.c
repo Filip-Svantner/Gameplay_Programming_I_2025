@@ -52,7 +52,10 @@ Command PollInput()
 							  IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_UP) ||
 							  IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN) ||
 							  IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT) ||
-							  IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT));
+							  IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT)||
+							  IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_LEFT)||
+							  IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT)||
+							  IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN));
 
 		// If the gamepad is active, determine specific command based on input
 		if (gamepadActive)
@@ -66,6 +69,12 @@ Command PollInput()
 				command |= MOVE_LEFT;
 			if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT))
 				command |= MOVE_RIGHT;
+			if(IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_LEFT))
+				command |= SUPER_POWER;
+			if(IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT))
+				command |= DEFEND;
+			if(IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN))
+				command |= RESTART_GAME;
 
 			// Check thumbstick for directional input, prioritising vertical movement
 			if (fabsf(leftStickY) > TUMBSTICK_DEADZONE_THRESHOLD ||
@@ -97,9 +106,14 @@ Command PollInput()
 	if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT))
 		command |= MOVE_RIGHT;
 
+	if(IsKeyDown(KEY_E) || IsKeyPressed(KEY_E))
+		command |= DEFEND;
+	if(IsKeyDown(KEY_X))
+		command |= SUPER_POWER;
+
 	if (IsKeyPressed(KEY_SPACE) || IsKeyDown(KEY_SPACE))
 		command |= ATTACK;
-		
+
 	if(IsKeyPressed(KEY_R))
 		command |= RESTART_GAME;
 

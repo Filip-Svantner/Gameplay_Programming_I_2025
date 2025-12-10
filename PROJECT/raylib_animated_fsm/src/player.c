@@ -42,6 +42,8 @@ Player *InitPlayer(const char *name, Vector2 position, int radius)
 	// Player Specific Data
 	player->stamina = 100.0f;
 	player->mana = 100.0f;
+	player->superPowerAvailable = true;
+	player->superPowerColor = WHITE;
 
 	// Init the Player FSM
 	InitPlayerFSM(&player->base);
@@ -99,7 +101,8 @@ void InitPlayerFSM(GameObject *object)
 		{EVENT_MOVE, STATE_WALKING},
 		{EVENT_ATTACK, STATE_ATTACKING},
 		{EVENT_DEFEND, STATE_SHIELD},
-		{EVENT_DIE, STATE_DEAD}};
+		{EVENT_DIE, STATE_DEAD},
+		{EVENT_SUPER_POWER, STATE_SUPER_POWER}};
 	// Set up the state configuration for STATE_IDLE
 	InitStateConfig(object, STATE_IDLE, "Player_Idle", PlayerEnterIdle, PlayerUpdateIdle, PlayerExitIdle);
 	// Configure valid transitions for STATE_IDLE
@@ -160,6 +163,16 @@ void InitPlayerFSM(GameObject *object)
 	InitStateConfig(object, STATE_RESPAWN, "Player_Respawn", PlayerEnterRespawn, PlayerUpdateRespawn, PlayerExitRespawn);
 	// Configure valid transitions for STATE_RESPAWN
 	StateTransitions(&object->stateConfigs[STATE_RESPAWN], respawnValidTransitions, sizeof(respawnValidTransitions) / sizeof(EventStateTransition));
+
+
+EventStateTransition superPowerValidTransitions[] = {
+		// EVENT -> STATE
+		{EVENT_SUPER_POWER, STATE_RESPAWN},
+		{EVENT_SUPER_POWER, STATE_IDLE}};
+	// Set up the state configuration for STATE_SUPER_POWER
+	InitStateConfig(object, STATE_SUPER_POWER, "Player_SuperPowered", PlayerEnterSuperPower, PlayerUpdateSuperPower, PlayerExitSuperPower);
+	// Configure valid transitions for STATE_SUPER_POWER
+	StateTransitions(&object->stateConfigs[STATE_SUPER_POWER], superPowerValidTransitions, sizeof(superPowerValidTransitions) / sizeof(EventStateTransition));
 
 	// Empty config for unimplemented STATE
 	// STATE_COLLISION
@@ -323,6 +336,8 @@ void PlayerEnterIdle(GameObject *object, float deltaTime)
 
 void PlayerUpdateIdle(GameObject *object, float deltaTime)
 {
+	Player *player = (Player *)object;
+	player->stamina += 0.2f;
 	// Player *player = (Player *)object;
 	// printf("\n%s -> UPDATE -> Idle\n", object->name);
 	// printf("Stamina: %.1f, Mana: %.1f\n\n", player->stamina, player->mana);
@@ -447,6 +462,8 @@ void PlayerUpdateWalking(GameObject *object, float deltaTime)
 	printf("Stamina: %.1f, Mana: %.1f\n\n", player->stamina, player->mana);
 	// Complete the remainder of the method
 
+	player->stamina += 0.2f;
+
 	// Move according to inputAxis
 	GameObjectMove(object, object->inputAxis, deltaTime);
 
@@ -559,7 +576,7 @@ void PlayerUpdateAttacking(GameObject *object, float deltaTime)
 	printf("Stamina: %.1f, Mana: %.1f\n\n", player->stamina, player->mana);
 	// Complete the remainder of the method
 	// Check if the attack should end or be interrupted (e.g., stamina depletion)
-
+	player->stamina += 0.2f;
 	// Move according to inputAxis
 	GameObjectMove(object, object->inputAxis, deltaTime);
 	
@@ -615,6 +632,7 @@ void PlayerEnterShielding(GameObject *object, float deltaTime)
 void PlayerUpdateShielding(GameObject *object, float deltaTime)
 {
 	Player *player = (Player *)object;
+	player->stamina -= 0.2f;
 	printf("\n%s -> UPDATE -> Sheilding\n", object->name);
 	printf("Stamina: %.1f, Mana: %.1f\n\n", player->stamina, player->mana);
 	// Complete the remainder of the method
@@ -695,9 +713,19 @@ void PlayerEnterRespawn(GameObject *object, float deltaTime)
 	object->position = (Vector2){GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
 	object->collider.p.x = object->position.x;
 	object->collider.p.y = object->position.y;
-	object->health = 100;
-	player->mana = 100.0f;
-	player->stamina = 100.0f;
+	if(player->superPowerAvailable)
+	{
+		object->health = 100;
+		player->mana = 100.0f;
+		player->stamina = 100.0f;
+	}
+	else
+	{
+		object->health = 300.0f;
+		object->lives = 1;
+		player->mana = 100.0f;
+		player->stamina = 100.0f;
+	}
 	printf("\n%s -> ENTER -> Respawn\n", object->name);
 	// Complete the remainder of the method
 }
@@ -716,4 +744,32 @@ void PlayerExitRespawn(GameObject *object, float deltaTime)
 	(void)deltaTime;
 	printf("\n%s <- EXIT <- Respawn\n", object->name);
 	// Complete the remainder of the method
+}
+
+void PlayerEnterSuperPower(GameObject *object, float deltaTime)
+{
+	(void)deltaTime;
+	Player *player = (Player *)object;
+	player->superPowerColor = PURPLE;
+}
+void PlayerUpdateSuperPower(GameObject *object, float deltaTime)
+{
+	(void)deltaTime;
+	Player *player = (Player *)object;
+	if(player->superPowerAvailable)
+	{
+		player->superPowerAvailable = false;
+		ChangeState(object, STATE_RESPAWN, deltaTime);
+	}
+	else
+	{
+		ChangeState(object, STATE_IDLE, deltaTime);
+	}
+	
+
+}
+void PlayerExitSuperPower(GameObject *object, float deltaTime)
+{
+	(void)deltaTime;
+	(void)object;
 }
