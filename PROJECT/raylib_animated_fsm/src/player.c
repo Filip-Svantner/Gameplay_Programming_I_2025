@@ -337,7 +337,7 @@ void PlayerEnterIdle(GameObject *object, float deltaTime)
 void PlayerUpdateIdle(GameObject *object, float deltaTime)
 {
 	Player *player = (Player *)object;
-	player->stamina += 0.2f;
+	player->stamina += 0.05f;
 	// Player *player = (Player *)object;
 	// printf("\n%s -> UPDATE -> Idle\n", object->name);
 	// printf("Stamina: %.1f, Mana: %.1f\n\n", player->stamina, player->mana);
@@ -462,7 +462,7 @@ void PlayerUpdateWalking(GameObject *object, float deltaTime)
 	printf("Stamina: %.1f, Mana: %.1f\n\n", player->stamina, player->mana);
 	// Complete the remainder of the method
 
-	player->stamina += 0.2f;
+	player->stamina += 0.05f;
 
 	// Move according to inputAxis
 	GameObjectMove(object, object->inputAxis, deltaTime);
@@ -576,7 +576,7 @@ void PlayerUpdateAttacking(GameObject *object, float deltaTime)
 	printf("Stamina: %.1f, Mana: %.1f\n\n", player->stamina, player->mana);
 	// Complete the remainder of the method
 	// Check if the attack should end or be interrupted (e.g., stamina depletion)
-	player->stamina += 0.2f;
+	player->stamina += 0.05f;
 	// Move according to inputAxis
 	GameObjectMove(object, object->inputAxis, deltaTime);
 	

@@ -169,6 +169,7 @@ void InitNPCFSM(GameObject *object)
 	// Alternatively NPC has its own FSM with only the implemented states
 	object->stateConfigs[STATE_WALKING] = UNIMPLEMENTED_STATE_CONFIG;
 	object->stateConfigs[STATE_COLLISION] = UNIMPLEMENTED_STATE_CONFIG;
+	object->stateConfigs[STATE_SUPER_POWER] = UNIMPLEMENTED_STATE_CONFIG;
 
 	// Print out Configs
 	PrintStateConfigs(object->stateConfigs, STATE_COUNT);
